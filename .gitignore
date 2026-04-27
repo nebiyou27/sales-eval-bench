@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+tenacious_bench_v0.1/held_out/
+outputs/
+*.jsonl.gz
+cost_log.csv
