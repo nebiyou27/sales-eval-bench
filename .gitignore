@@ -13,3 +13,4 @@ tenacious_bench_v0.1/held_out/
 outputs/
 *.jsonl.gz
 cost_log.csv
+Challenge_Documents/
