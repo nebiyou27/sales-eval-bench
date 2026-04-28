@@ -404,13 +404,13 @@ Step 9 verification:
 
 ### 10. Prepare The Day 1 Work Queue
 
-- [ ] Create or confirm `audit_memo.md`.
-- [ ] Create or confirm `schema.json`.
-- [ ] Create or confirm `scoring/scoring_evaluator.py`.
-- [ ] Prepare three dummy tasks.
-- [ ] Prepare a probe/trace evidence list for the audit memo.
-- [ ] Identify exact benchmark gaps that public retail benchmarks miss.
-- [ ] Confirm Act I acceptance criteria.
+- [x] Create or confirm `audit_memo.md`.
+- [x] Create or confirm `schema.json`.
+- [x] Create or confirm `scoring/scoring_evaluator.py`.
+- [x] Prepare three dummy tasks.
+- [x] Prepare a probe/trace evidence list for the audit memo.
+- [x] Identify exact benchmark gaps that public retail benchmarks miss.
+- [x] Confirm Act I acceptance criteria.
 
 Detailed steps:
 
@@ -433,12 +433,24 @@ Done means:
 Day 1 starts with an ordered execution queue, not a vague goal.
 ```
 
+Step 10 verification:
+
+- `Day_1_Work_Queue.md` defines the ordered Act I queue, inputs, outputs, acceptance criteria,
+  public benchmark gaps, and later-act backlog boundary.
+- `audit_memo.md` exists as a Day 1 starter with required probe and trace evidence.
+- Existing `schema.json`, `scoring/scoring_evaluator.py`, and
+  `tenacious_bench_v0.1/dev/dummy_tasks.jsonl` are confirmed as the Day 1 schema/evaluator
+  work surface.
+- `python scoring/scoring_evaluator.py` passes the smoke test.
+- All three dummy tasks validate against `schema.json`.
+- All three dummy tasks receive passing numeric deterministic scores.
+
 ## Day Zero Readiness Review
 
 Use this final checklist at the end of Day 0.
 
-- [ ] Challenge brief requirements reviewed.
-- [ ] Path B and ORPO decision confirmed.
+- [x] Challenge brief requirements reviewed.
+- [x] Path B and ORPO decision confirmed.
 - [x] HuggingFace account and token ready.
 - [x] OpenRouter account and key ready.
 - [x] Colab T4 runtime tested.
@@ -450,7 +462,7 @@ Use this final checklist at the end of Day 0.
 - [x] Unsloth smoke test completed or scheduled with blocker notes.
 - [x] Cost log created.
 - [x] First common-reading memo drafted or assigned to the next immediate work block.
-- [ ] Day 1 work queue prepared.
+- [x] Day 1 work queue prepared.
 
 ## Day 1 Immediate Next Actions
 
@@ -481,3 +493,5 @@ Access works, compute is proven or blocked with specifics, seed artifacts are in
 Path B is justified, cost tracking is live, the first reading memo exists or is queued, and
 Day 1 can begin with audit/schema/evaluator implementation.
 ```
+
+Final readiness status: complete on 2026-04-28.

@@ -4,6 +4,24 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-28 - Day Zero Step 10 Day 1 queue
+
+**Completed:** Day 1 work queue prepared and Day Zero readiness review closed.
+
+**Artifacts:** `Day_1_Work_Queue.md` defines the ordered Act I execution queue and acceptance
+criteria. `audit_memo.md` now exists as a Day 1 starter with the required probe and trace evidence.
+
+**Confirmed Day 1 work surface:** `schema.json`, `scoring/scoring_evaluator.py`, and
+`tenacious_bench_v0.1/dev/dummy_tasks.jsonl` are the schema/evaluator verification targets.
+
+**Verification:** `python scoring/scoring_evaluator.py` passes. All three dummy tasks validate
+against `schema.json` and receive passing numeric deterministic scores.
+
+**Next:** Begin Day 1 Act I by writing the 600-word audit memo, then tighten schema/evaluator
+checks against the three dummy tasks.
+
+---
+
 ## 2026-04-28 - Day Zero Step 9 common-reading memo
 
 **Completed:** First synthesis memo drafted from Liu et al., "Best Practices and Lessons
