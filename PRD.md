@@ -17,7 +17,7 @@ A Tenacious-specific evaluation benchmark (Tenacious-Bench v0.1) and a trained L
 - [ ] Published to HuggingFace with CC-BY-4.0 license
 
 ### Training (Acts III–IV)
-- [ ] LoRA adapter trained with ORPO on Qwen 3.5 (0.8B or 2B) via Unsloth on Colab T4
+- [ ] LoRA adapter trained with ORPO on Qwen3-0.6B, or Qwen3-1.7B if the T4 smoke run is stable, via Unsloth on Colab T4
 - [ ] Training loss curve logged
 - [ ] Delta A positive on held-out with 95% CI, p < 0.05 (paired bootstrap)
 - [ ] Delta B reported honestly (trained vs prompt-only same backbone)

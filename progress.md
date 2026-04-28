@@ -4,7 +4,24 @@ Decision log. Most recent entry first.
 
 ---
 
-## 2026-04-28 - Day Zero readiness through Step 7
+## 2026-04-28 - Day Zero Step 9 common-reading memo
+
+**Completed:** First synthesis memo drafted from Liu et al., "Best Practices and Lessons
+Learned on Synthetic Data" (`arXiv:2404.07503v2`).
+
+**Artifact:** `synthesis_memos/synthetic_data_best_practices_v0.md`.
+
+**Repo decision:** Days 2-3 synthesis should be controlled and metadata-rich: generate from
+probe/trace templates, preserve source and failure-dimension metadata, filter before partition
+assignment, and run contamination checks before held-out sealing. Generic high-quality synthetic
+sales examples are not sufficient for Tenacious-Bench because a response can be factually
+grounded but still fail buyer-respect or signal-entitlement constraints.
+
+**Next:** Step 10 - prepare the Day 1 work queue.
+
+---
+
+## 2026-04-28 - Day Zero readiness through Step 8
 
 **Completed:** Accounts, local environment, seed inventory, schema starter, evaluator smoke path,
 and scheduled Unsloth training smoke test.
@@ -23,8 +40,8 @@ and `tenacious_bench_v0.1/dev/dummy_tasks.jsonl` validates with three passing du
 work, including candidate chosen/rejected examples for Path B preference data.
 
 **Training smoke test:** `training/dummy_orpo_preferences.jsonl` contains five valid ORPO
-preference examples. `training/unsloth_smoke_test_plan.md` schedules a Colab T4 Qwen3.5 Unsloth
-smoke run with fp16, no QLoRA 4-bit, and optional HuggingFace adapter push.
+preference examples. `training/unsloth_smoke_test_plan.md` schedules a Colab T4 Qwen3-0.6B Unsloth
+smoke run with fp16, Qwen3-1.7B as fallback only after a stable T4 run, and optional HuggingFace adapter push.
 
 **Cost tracking:** `cost_log.csv` and `cost_controls.md` are live. The Week 11 cap is USD 10:
 USD 3-5 for dataset authoring, USD 0-5 for training, USD 2-3 for held-out evaluation, and

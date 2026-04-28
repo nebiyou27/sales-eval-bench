@@ -255,7 +255,18 @@ ai_maturity_consistency
 signal_grounding
 style_guide_adherence
 output_validity
-calendar_or_next_step_quality
+next_step_quality
+```
+
+Current Day Zero deterministic smoke checks use narrower names:
+
+```text
+output_nonempty
+ai_maturity_keyword_present
+banned_condescension_absent
+expected_signal_term_present
+forbidden_terms_absent
+buyer_next_step_keyword_present
 ```
 
 5. Confirm the Day 1 evaluator can score three hand-built dummy tasks before any large dataset generation.
@@ -284,7 +295,7 @@ Step 6 verification:
 
 Detailed steps:
 
-1. Open the Unsloth Qwen 3.5 fine-tuning guide.
+1. Open the Unsloth Qwen3 fine-tuning guide.
 2. Create a five-example dummy preference dataset for ORPO.
 3. Run the notebook on Colab T4.
 4. Confirm the training cell completes.
@@ -301,7 +312,7 @@ The training environment is proven viable, or the exact compute blocker is known
 Step 7 verification:
 
 - Colab T4 access was confirmed with `nvidia-smi`.
-- Unsloth Qwen3.5 guide and general fine-tuning guide were checked.
+- Unsloth Qwen3 guide and general fine-tuning guide were checked.
 - Smoke-test plan created in `training/unsloth_smoke_test_plan.md`.
 - Five-record dummy ORPO preference dataset created in `training/dummy_orpo_preferences.jsonl`.
 - Actual Colab training run and adapter push are scheduled manual actions.
@@ -344,11 +355,11 @@ Step 8 verification:
 
 ### 9. Draft The First Common Reading Memo
 
-- [ ] Select one common reading to complete on Day 0.
-- [ ] Draft a one-page synthesis memo in `synthesis_memos/`.
-- [ ] Include one design choice from the paper that applies to Tenacious-Bench.
-- [ ] Include one specific disagreement or limitation.
-- [ ] Tie the memo to a concrete repo decision.
+- [x] Select one common reading to complete on Day 0.
+- [x] Draft a one-page synthesis memo in `synthesis_memos/`.
+- [x] Include one design choice from the paper that applies to Tenacious-Bench.
+- [x] Include one specific disagreement or limitation.
+- [x] Tie the memo to a concrete repo decision.
 
 Recommended Day 0 reading:
 
@@ -383,6 +394,13 @@ Done means:
 ```text
 At least one common-reading memo exists and informs the Act II dataset construction plan.
 ```
+
+Step 9 verification:
+
+- Common reading selected: Liu et al., "Best Practices and Lessons Learned on Synthetic Data".
+- Memo drafted at `synthesis_memos/synthetic_data_best_practices_v0.md`.
+- Memo ties the paper to controlled synthesis, provenance-heavy schema design, filtering,
+  contamination checks, and model-family rotation.
 
 ### 10. Prepare The Day 1 Work Queue
 
@@ -431,7 +449,7 @@ Use this final checklist at the end of Day 0.
 - [x] Schema/evaluator Day 1 requirements clear.
 - [x] Unsloth smoke test completed or scheduled with blocker notes.
 - [x] Cost log created.
-- [ ] First common-reading memo drafted or assigned to the next immediate work block.
+- [x] First common-reading memo drafted or assigned to the next immediate work block.
 - [ ] Day 1 work queue prepared.
 
 ## Day 1 Immediate Next Actions

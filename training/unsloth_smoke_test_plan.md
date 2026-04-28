@@ -7,22 +7,22 @@ Prove that the Day 5 training path can run on Google Colab T4 before the real pr
 ## Current Decision
 
 - Runtime: Google Colab T4.
-- Model family: Qwen3.5 via Unsloth, starting with the smallest free-Colab notebook option.
+- Model target: Qwen3-0.6B via Unsloth for the first smoke run; Qwen3-1.7B is the fallback only if T4 memory and runtime are stable.
 - Precision: fp16 on Colab T4; bf16 only for RunPod 4090 or Colab Pro L4 fallback.
-- Quantization: do not use QLoRA 4-bit for Qwen3.5 unless the training plan is explicitly revised.
+- Quantization: do not use QLoRA 4-bit unless the training plan is explicitly revised after the smoke run.
 - Dataset: `training/dummy_orpo_preferences.jsonl`.
 - Smoke size: five preference records.
 - Target artifact: private or disposable HuggingFace adapter repo.
 
 ## External References Checked
 
-- Unsloth Qwen3.5 fine-tuning guide: https://unsloth.ai/docs/models/qwen3.5/fine-tune
+- Unsloth Qwen3 fine-tuning guide: https://unsloth.ai/docs/models/qwen3-how-to-run-and-fine-tune
 - General Unsloth fine-tuning guide: https://docs.unsloth.ai/get-started/fine-tuning-llms-guide
 
 ## Colab Checklist
 
 1. Start a Colab T4 runtime.
-2. Open the smallest available Qwen3.5 Unsloth notebook, preferably Qwen3.5-0.8B or Qwen3.5-2B.
+2. Open the smallest available Qwen3 Unsloth notebook and set the model to Qwen3-0.6B for the first run.
 3. Install or update Unsloth in the notebook.
 4. Upload or fetch `training/dummy_orpo_preferences.jsonl`.
 5. Convert the five records into the notebook's preference format with `prompt`, `chosen`, and `rejected`.
@@ -40,4 +40,4 @@ Prove that the Day 5 training path can run on Google Colab T4 before the real pr
 
 | Date | Runtime | Model | Precision | Compile Time | Total Runtime | Adapter Push | Result | Notes |
 |---|---|---|---|---|---|---|---|---|
-| pending | Colab T4 | Qwen3.5 small notebook | fp16 | pending | pending | scheduled | scheduled | Manual Colab execution required |
+| pending | Colab T4 | Qwen3-0.6B | fp16 | pending | pending | scheduled | scheduled | Manual Colab execution required |

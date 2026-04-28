@@ -28,6 +28,11 @@ Week 10 evidence points to two dominant failure modes:
    `f5497551-5989-48a6-9c14-ac73106044ae` (task 52),
    `ba85025f-496d-43c0-91ed-39de2e2e480d` (task 66).
 
+Week 10 held-out traces are cited as Path B justification only; Week 11 train/dev partitions
+exclude these trace IDs. They may appear in audit evidence and methodology rationale, but they
+must not be copied into preference pairs, task inputs, candidate outputs, or any generated
+train/dev examples.
+
 Both are **inconsistency failures**: the agent is right most of the time but has no mechanism
 to catch when it is wrong. A trained judge/critic (Path B) is the correct treatment. A
 generation fix (Path A) would only improve average output quality; it would not add
@@ -55,12 +60,18 @@ implementation story for a small preference-tuned critic.
 
 ## Rubric And Scoring
 
-The benchmark rubric is machine-verifiable first. The initial dimensions are
+The benchmark rubric is machine-verifiable first. The target semantic dimensions are
 `output_validity`, `ai_maturity_consistency`, `gap_condescension`, `signal_grounding`,
 `style_guide_adherence`, and `next_step_quality`. Each task stores executable scoring rules in
 `schema.json`; `scoring/scoring_evaluator.py` is the forward-compatible command path for local
 scoring, deterministic checks, and any judge-backed score fields that cannot be reduced to a
 regex or JSON-schema constraint.
+
+The Day Zero evaluator exposes only honest deterministic smoke checks:
+`output_nonempty`, `ai_maturity_keyword_present`, `banned_condescension_absent`,
+`expected_signal_term_present`, `forbidden_terms_absent`, and
+`buyer_next_step_keyword_present`. These checks verify wiring and obvious failures; they do not
+claim to fully score semantic consistency or buyer-fit quality until the Day 1 rubric is tightened.
 
 Judge-backed score fields are run with temperature 0, fixed seed where the provider supports it,
 and an explicitly pinned model/version string in the run manifest, for example
@@ -132,6 +143,15 @@ variants, but a DeepSeek-generated rewrite cannot be accepted by a DeepSeek-only
 For the R4 audit trail, every synthesis, judge, calibration, training, smoke-test, and held-out
 evaluation call is logged to `cost_log.csv` with timestamp, role, model/version, input tokens,
 output tokens, and USD cost.
+
+### Synthetic Data Quality Gate
+
+The Day 0 reading memo in `synthesis_memos/synthetic_data_best_practices_v0.md` sets the
+dataset-authoring rule for Acts II-III: synthetic examples must be controlled, metadata-rich,
+and filtered before partition assignment. Bulk generation should start from probe and
+trace-derived templates, preserve provenance in `metadata`, and pass deterministic checks before
+any model-family-rotated judge score is trusted. This keeps the benchmark focused on
+Tenacious-specific failures rather than generic sales-writing quality.
 
 ---
 

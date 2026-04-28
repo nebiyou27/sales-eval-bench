@@ -31,7 +31,7 @@ DATASET AUTHORING (4 modes: trace-derived, programmatic, synthesis, hand-authore
     ↓ LLM-as-judge filter
 TENACIOUS-BENCH v0.1 (train 50% / dev 30% / held_out 20%)
     ↓ contamination checks
-TRAINING (ORPO LoRA on Qwen 3.5, Unsloth, Colab T4)
+TRAINING (ORPO LoRA on Qwen3-0.6B, fallback Qwen3-1.7B, Unsloth, Colab T4)
     ↓
 ABLATIONS (Delta A on held-out, Delta B vs prompt-only, cost-Pareto)
     ↓
@@ -121,7 +121,9 @@ No features beyond what was asked. No abstractions for single-use code. Match ex
 
 **Path B — ORPO preference-tuned judge/critic**
 
-Backbone: Qwen 3.5 0.8B or 2B (pinned version in requirements.txt)
+Backbone: Qwen3-0.6B for the first smoke run; Qwen3-1.7B only if T4 memory and runtime are stable.
+Python dependencies are pinned in `requirements.txt`; re-pin only if the Day 5 Colab/Unsloth
+runtime requires a compatible training stack.
 Algorithm: ORPO (reference-free, single-stage, fits T4 16 GB VRAM)
 Framework: Unsloth + HuggingFace TRL
 Compute: Google Colab T4 (free)

@@ -76,12 +76,12 @@
           "items": {
             "type": "string",
             "enum": [
-              "output_validity",
-              "ai_maturity_consistency",
-              "gap_condescension",
-              "signal_grounding",
-              "style_guide_adherence",
-              "next_step_quality"
+              "output_nonempty",
+              "ai_maturity_keyword_present",
+              "banned_condescension_absent",
+              "expected_signal_term_present",
+              "forbidden_terms_absent",
+              "buyer_next_step_keyword_present"
             ]
           },
           "minItems": 1
