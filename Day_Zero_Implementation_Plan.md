@@ -274,13 +274,13 @@ Step 6 verification:
 
 ### 7. Run Or Schedule The Unsloth Smoke Test
 
-- [ ] Colab T4 runtime can start.
-- [ ] Unsloth notebook path is known.
-- [ ] Dummy five-task LoRA run is planned.
-- [ ] Adapter push to HuggingFace is tested or scheduled.
-- [ ] Expected first-run compile time of 6-10 minutes is accounted for.
-- [ ] Precision choice is documented: fp16 on Colab T4, bf16 on RunPod 4090 or Colab Pro L4.
-- [ ] QLoRA 4-bit is not selected unless the training plan is explicitly revised.
+- [x] Colab T4 runtime can start.
+- [x] Unsloth notebook path is known.
+- [x] Dummy five-task LoRA run is planned.
+- [x] Adapter push to HuggingFace is tested or scheduled.
+- [x] Expected first-run compile time of 6-10 minutes is accounted for.
+- [x] Precision choice is documented: fp16 on Colab T4, bf16 on RunPod 4090 or Colab Pro L4.
+- [x] QLoRA 4-bit is not selected unless the training plan is explicitly revised.
 
 Detailed steps:
 
@@ -297,6 +297,14 @@ Done means:
 ```text
 The training environment is proven viable, or the exact compute blocker is known before Day 5.
 ```
+
+Step 7 verification:
+
+- Colab T4 access was confirmed with `nvidia-smi`.
+- Unsloth Qwen3.5 guide and general fine-tuning guide were checked.
+- Smoke-test plan created in `training/unsloth_smoke_test_plan.md`.
+- Five-record dummy ORPO preference dataset created in `training/dummy_orpo_preferences.jsonl`.
+- Actual Colab training run and adapter push are scheduled manual actions.
 
 ### 8. Set Up Cost Tracking
 
@@ -415,7 +423,7 @@ Use this final checklist at the end of Day 0.
 - [x] Week 10 seed artifacts confirmed present.
 - [x] Candidate trace IDs and probe IDs identified.
 - [x] Schema/evaluator Day 1 requirements clear.
-- [ ] Unsloth smoke test completed or scheduled with blocker notes.
+- [x] Unsloth smoke test completed or scheduled with blocker notes.
 - [ ] Cost log created.
 - [ ] First common-reading memo drafted or assigned to the next immediate work block.
 - [ ] Day 1 work queue prepared.
