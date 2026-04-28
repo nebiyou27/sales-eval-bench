@@ -4,6 +4,38 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-28 - Repo layout refactor
+
+**Completed:** Folder structure refactored before Day 1 work begins.
+
+**Changes:**
+
+- All project documentation moved into `docs/` (`PRD.md`, `methodology.md`, `progress.md`,
+  `audit_memo.md`, `cost_controls.md`).
+- `seed/day1_seed_inventory.md` moved to `docs/inventories/` so `seed/` stays read-only Week 10
+  inputs.
+- Synthesis memos consolidated under `docs/memos/`. Plans (`Day_Zero_Implementation_Plan.md`,
+  `Day_1_Work_Queue.md`) consolidated under `docs/plans/`. Training plan moved to
+  `docs/training/unsloth_smoke_test_plan.md`.
+- Code reorganized under `src/` with `generation/`, `scoring/`, `training/`, `ablations/`
+  subfolders. `scoring/scoring_evaluator.py` is now `src/scoring/scoring_evaluator.py`.
+- `tenacious_bench_v0.1/smoke/` added; `dummy_orpo_preferences.jsonl` moved there so
+  `tenacious_bench_v0.1/` is data-only and `src/training/` reserved for code.
+- `cost/log.csv` replaces root-level `cost_log.csv`; gitignore updated accordingly.
+- `tests/` directory created for upcoming unit tests.
+- Stale `.gitkeep` files removed from folders that already contain real files.
+
+**Verification:** `python src/scoring/scoring_evaluator.py` passes positive and negative cases.
+`README.md` and `CLAUDE.md` directory indexes updated. All inter-doc references repointed.
+
+**Why now:** Day 2-3 will land generation scripts and Day 5 will land training scripts. Once
+those exist, refactoring the layout becomes expensive and risks broken imports. Doing it on
+Day Zero is cheap.
+
+**Next:** Begin Day 1 Act I against the new layout.
+
+---
+
 ## 2026-04-28 - Day Zero Step 10 Day 1 queue
 
 **Completed:** Day 1 work queue prepared and Day Zero readiness review closed.

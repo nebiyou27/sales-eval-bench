@@ -10,7 +10,7 @@ Prove that the Day 5 training path can run on Google Colab T4 before the real pr
 - Model target: Qwen3-0.6B via Unsloth for the first smoke run; Qwen3-1.7B is the fallback only if T4 memory and runtime are stable.
 - Precision: fp16 on Colab T4; bf16 only for RunPod 4090 or Colab Pro L4 fallback.
 - Quantization: do not use QLoRA 4-bit unless the training plan is explicitly revised after the smoke run.
-- Dataset: `training/dummy_orpo_preferences.jsonl`.
+- Dataset: `tenacious_bench_v0.1/smoke/dummy_orpo_preferences.jsonl`.
 - Smoke size: five preference records.
 - Target artifact: private or disposable HuggingFace adapter repo.
 
@@ -24,7 +24,7 @@ Prove that the Day 5 training path can run on Google Colab T4 before the real pr
 1. Start a Colab T4 runtime.
 2. Open the smallest available Qwen3 Unsloth notebook and set the model to Qwen3-0.6B for the first run.
 3. Install or update Unsloth in the notebook.
-4. Upload or fetch `training/dummy_orpo_preferences.jsonl`.
+4. Upload or fetch `tenacious_bench_v0.1/smoke/dummy_orpo_preferences.jsonl`.
 5. Convert the five records into the notebook's preference format with `prompt`, `chosen`, and `rejected`.
 6. Run a minimal LoRA/ORPO training pass.
 7. Record compile time, total runtime, package versions, GPU type, and any errors.

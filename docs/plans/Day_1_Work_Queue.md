@@ -7,20 +7,20 @@ locking the benchmark schema/evaluator path before Act II dataset construction.
 
 ## Ordered Queue
 
-### 1. Finish `audit_memo.md`
+### 1. Finish `docs/audit_memo.md`
 
 Inputs:
 
-- `seed/day1_seed_inventory.md`
+- `docs/inventories/day1_seed_inventory.md`
 - `seed/probe_library.md`
 - `seed/failure_taxonomy.md`
-- `methodology.md`
+- `docs/methodology.md`
 
 Acceptance criteria:
 
 - Maximum 600 words.
 - Cites at least eight probe IDs: P05, P24, P26, P27, P29, P30, P33, P35.
-- Cites at least five trace examples from `seed/day1_seed_inventory.md`.
+- Cites at least five trace examples from `docs/inventories/day1_seed_inventory.md`.
 - Explains the exact Tenacious-specific benchmark gaps that generic public retail
   benchmarks miss.
 - Ends with the Act I recommendation for Path B judge/critic work.
@@ -31,7 +31,7 @@ Inputs:
 
 - `schema.json`
 - `tenacious_bench_v0.1/dev/dummy_tasks.jsonl`
-- `synthesis_memos/synthetic_data_best_practices_v0.md`
+- `docs/memos/synthetic_data_best_practices_v0.md`
 
 Acceptance criteria:
 
@@ -39,18 +39,18 @@ Acceptance criteria:
 - Required metadata still covers partition, source mode, difficulty, failure dimension,
   source artifact, and probe ID.
 - `retrieval_provenance` requirements are queued for any signal-grounded synthetic task.
-- Schema dimensions remain aligned with `methodology.md`.
+- Schema dimensions remain aligned with `docs/methodology.md`.
 
-### 3. Verify `scoring/scoring_evaluator.py`
+### 3. Verify `src/scoring/scoring_evaluator.py`
 
 Inputs:
 
-- `scoring/scoring_evaluator.py`
+- `src/scoring/scoring_evaluator.py`
 - `tenacious_bench_v0.1/dev/dummy_tasks.jsonl`
 
 Acceptance criteria:
 
-- `python scoring/scoring_evaluator.py` returns a passing smoke result.
+- `python src/scoring/scoring_evaluator.py` returns a passing smoke result.
 - Each dummy task can produce a numeric deterministic score without human input.
 - Any judge-backed fields remain optional hooks until Day 2 calibration.
 - Failure cases remain visible rather than silently coerced into passes.
@@ -59,7 +59,7 @@ Acceptance criteria:
 
 Inputs:
 
-- `seed/day1_seed_inventory.md`
+- `docs/inventories/day1_seed_inventory.md`
 - `seed/held_out_traces.jsonl`
 - `seed/trace_log.jsonl`
 
@@ -74,9 +74,9 @@ Acceptance criteria:
 
 Inputs:
 
-- `Day_Zero_Implementation_Plan.md`
-- `synthesis_memos/synthetic_data_best_practices_v0.md`
-- `cost_controls.md`
+- `docs/plans/Day_Zero_Implementation_Plan.md`
+- `docs/memos/synthetic_data_best_practices_v0.md`
+- `docs/cost_controls.md`
 
 Acceptance criteria:
 
@@ -96,6 +96,6 @@ Acceptance criteria:
 
 ## Day 1 Done Means
 
-`audit_memo.md` is complete, `schema.json` and `scoring/scoring_evaluator.py` are verified on
+`docs/audit_memo.md` is complete, `schema.json` and `src/scoring/scoring_evaluator.py` are verified on
 dummy tasks, Act I evidence is traceable, and Act II starts with a controlled dataset-authoring
 plan rather than a vague synthesis prompt.

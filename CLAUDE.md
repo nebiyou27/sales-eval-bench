@@ -45,14 +45,30 @@ PUBLIC ARTIFACTS (HuggingFace dataset + model, blog post, community engagement)
 ```
 Sales Eval Bench/
 ├── CLAUDE.md                    # This file
-├── PRD.md                       # Acceptance criteria
-├── README.md
-├── progress.md                  # Decision log
-├── methodology.md               # Path B declaration, partitioning, contamination protocol
-├── audit_memo.md                # Act I — what τ²-Bench misses
+├── README.md                    # Setup + run order + directory index
 ├── schema.json                  # Tenacious-Bench task schema
-├── datasheet.md                 # Gebru + Pushkarna documentation
-├── inter_rater_agreement.md     # Agreement matrix
+├── requirements.txt             # Pinned local Day Zero deps
+│
+├── docs/                        # All project documentation
+│   ├── PRD.md                   # Acceptance criteria
+│   ├── methodology.md           # Path B declaration, partitioning, contamination protocol
+│   ├── progress.md              # Decision log
+│   ├── audit_memo.md            # Act I — what τ²-Bench misses
+│   ├── cost_controls.md         # Budget rules; data lives in cost/log.csv
+│   ├── datasheet.md             # Gebru + Pushkarna documentation (later)
+│   ├── inter_rater_agreement.md # Agreement matrix (later)
+│   ├── inventories/
+│   │   └── day1_seed_inventory.md
+│   ├── memos/                   # Paper reading memos (one per paper)
+│   │   └── synthetic_data_best_practices_v0.md
+│   ├── plans/                   # Working plans (Day_Zero gitignored, Day_1 tracked)
+│   │   ├── Day_Zero_Implementation_Plan.md
+│   │   └── Day_1_Work_Queue.md
+│   └── training/
+│       └── unsloth_smoke_test_plan.md
+│
+├── cost/
+│   └── log.csv                  # gitignored audit trail
 │
 ├── seed/                        # Week 10 artifacts (read-only inputs)
 │   ├── trace_log.jsonl
@@ -60,31 +76,22 @@ Sales Eval Bench/
 │   ├── failure_taxonomy.md
 │   └── held_out_traces.jsonl
 │
-├── tenacious_bench_v0.1/
+├── tenacious_bench_v0.1/        # Data only — code lives in src/
 │   ├── train/                   # 50% — LoRA training data
 │   ├── dev/                     # 30% — iteration and rubric calibration
-│   └── held_out/                # 20% — sealed, gitignored
+│   │   └── dummy_tasks.jsonl
+│   ├── held_out/                # 20% — sealed, gitignored
+│   └── smoke/                   # Smoke fixtures (dummy ORPO preferences, etc.)
+│       └── dummy_orpo_preferences.jsonl
 │
-├── generation_scripts/          # Authoring pipeline
-│   ├── generate_programmatic.py
-│   ├── generate_synthesis.py
-│   ├── judge_filter.py
-│   ├── dedup.py
-│   └── contamination_check.py
+├── src/                         # Code — pipeline modules
+│   ├── generation/              # Authoring (programmatic, synthesis, dedup, judge filter, contamination)
+│   ├── scoring/
+│   │   └── scoring_evaluator.py
+│   ├── training/                # prepare_orpo_data.py, train_orpo.py, training_run.log
+│   └── ablations/
 │
-├── scoring/
-│   └── scoring_evaluator.py     # Machine-verifiable scorer
-│
-├── training/
-│   ├── prepare_orpo_data.py
-│   ├── train_orpo.py
-│   └── training_run.log
-│
-├── ablations/
-│   ├── ablation_results.json
-│   └── held_out_traces.jsonl
-│
-└── synthesis_memos/             # Paper reading memos (one per paper)
+└── tests/                       # Unit tests for src/ modules
 ```
 
 ---
@@ -97,7 +104,7 @@ not a rubric. "Zero banned phrases AND ≥1 signal citation AND ≥4/5 on tone j
 
 ### R2 — No Preference Leakage
 Never use the same model family to generate and judge the same task. Rotation policy is in
-`methodology.md`.
+`docs/methodology.md`.
 
 ### R3 — Held-Out Is Sacred
 Nothing from held_out/ enters training. Contamination checks run before sealing. Held-out is
@@ -106,7 +113,7 @@ gitignored and not committed unencrypted.
 ### R4 — Cost Discipline
 Total budget: $10. Dev-tier models (Qwen3-Next, DeepSeek V3.2) on Days 2–3. Eval-tier
 (Claude Sonnet 4.6) only on Days 4–6 for spot-check and ablation. No τ²-Bench re-runs.
-Every charge logged in cost_log.csv with timestamp + bucket + purpose.
+Every charge logged in `cost/log.csv` with timestamp + bucket + purpose.
 
 ### R5 — Path B Evidence
 Every design choice in training cites at least one of: P33 trace ID, P24 trace ID, or a
@@ -137,8 +144,8 @@ Preference pairs:
 
 ## 6. Session Resume Protocol
 
-> "Read CLAUDE.md, PRD.md, README.md, and progress.md in order. Confirm understanding and
-> tell me where we left off."
+> "Read CLAUDE.md, README.md, docs/PRD.md, and docs/progress.md in order. Confirm
+> understanding and tell me where we left off."
 
 ---
 

@@ -34,7 +34,7 @@ A Tenacious-specific evaluation benchmark (Tenacious-Bench v0.1) and a trained L
 
 ### Cost
 - Total spend: ≤ $10
-- Every charge logged in cost_log.csv
+- Every charge logged in `cost/log.csv`
 
 ## Minimum Uplift
 - Delta A > 0 on Tenacious-Bench held-out (any positive lift with statistical significance)

@@ -25,8 +25,8 @@ Days 2-3 dataset authoring should use a three-stage gate:
 3. Filter examples before training or evaluation with deterministic checks first, then a
    different model-family judge for semantic checks.
 
-The concrete repo decision is that `generation_scripts/generate_synthesis.py` should emit
-generation metadata alongside each candidate, and `generation_scripts/contamination_check.py`
+The concrete repo decision is that `src/generation/generate_synthesis.py` should emit
+generation metadata alongside each candidate, and `src/generation/contamination_check.py`
 should run before any generated example can enter `held_out/`. The existing
 `schema.json` fields for `source_mode`, `failure_dimension`, `scoring_config`, and
 `metadata` are therefore not optional bookkeeping; they are quality-control surfaces.
@@ -49,17 +49,17 @@ is why Path B remains a judge/critic rather than just an SFT dataset expansion.
 - Near-duplicate rate from n-gram and embedding contamination checks.
 - Human spot-check notes for at least 30 calibration tasks before held-out sealing.
 - Disagreement cases where deterministic checks pass but the judge rejects the output.
-- Cost per accepted synthetic task, logged in `cost_log.csv`.
+- Cost per accepted synthetic task, logged in `cost/log.csv`.
 
 ## Repo Artifact Affected
 
 - `schema.json`: keep provenance, partition, failure dimension, and scoring config required.
-- `generation_scripts/generate_synthesis.py`: generate from controlled probe templates with
+- `src/generation/generate_synthesis.py`: generate from controlled probe templates with
   metadata, not free-form bulk prompts.
-- `generation_scripts/contamination_check.py`: enforce held-out separation before sealing.
-- `methodology.md`: cite this memo as the Day 0 reason for metadata-heavy schema design and
+- `src/generation/contamination_check.py`: enforce held-out separation before sealing.
+- `docs/methodology.md`: cite this memo as the Day 0 reason for metadata-heavy schema design and
   model-family rotation.
-- `cost_controls.md`: preserve the no eval-tier authoring/dedup rule for Days 2-3 because
+- `docs/cost_controls.md`: preserve the no eval-tier authoring/dedup rule for Days 2-3 because
   low-cost generation is acceptable only if filtering is strict.
 
 ## Source Notes

@@ -1,6 +1,0 @@
-timestamp_utc,bucket,provider,model_or_compute,purpose,estimated_cost_usd,actual_cost_usd,notes
-2026-04-28T00:00:00Z,dataset_authoring,budget_cap,OpenRouter dev-tier models,Cap for Days 2-3 task synthesis dedup and judge filtering,5.00,0.00,No eval-tier authoring or dedup on Days 2-3
-2026-04-28T00:00:00Z,training,budget_cap,Colab T4 primary RunPod fallback,Cap for dummy smoke test and optional fallback compute,0.00,0.00,Prefer free Colab T4; spend only if Colab caps block progress
-2026-04-28T00:00:00Z,held_out_evaluation,budget_cap,OpenRouter evaluation models,Cap for held-out passes after dataset construction,3.00,0.00,No held-out evaluation before benchmark is sealed
-2026-04-28T00:00:00Z,reserve,budget_cap,any,Reserve for unexpected retries or small overage,2.00,0.00,Requires explicit note before use
-2026-04-28T00:00:00Z,total,budget_cap,all,Total Week 11 spend cap,10.00,0.00,No tau2-Bench retail reruns

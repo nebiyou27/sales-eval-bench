@@ -25,35 +25,37 @@ cp .env.example .env
 ## Run order
 
 ```bash
-# Validate schema
-python scoring/scoring_evaluator.py
+# Validate evaluator smoke
+python src/scoring/scoring_evaluator.py
 
 # Author dataset (Days 2-3)
-python generation_scripts/generate_programmatic.py
-python generation_scripts/generate_synthesis.py
+python src/generation/generate_programmatic.py
+python src/generation/generate_synthesis.py
 
 # Run contamination checks
-python generation_scripts/contamination_check.py
+python src/generation/contamination_check.py
 
-# Training (Day 5)
-# See training/README.md
+# Training (Day 5) — see docs/training/unsloth_smoke_test_plan.md
 ```
 
 ## Directory Index
 
 | Path | Purpose |
 |---|---|
-| `tenacious_bench_v0.1/` | Dataset partitions (train/dev/held_out) |
-| `generation_scripts/` | Authoring pipeline (programmatic, synthesis, dedup, judge filter) |
-| `scoring/` | Machine-verifiable scoring evaluator |
-| `training/` | LoRA training script and hyperparameters |
-| `ablations/` | Ablation results and held-out traces |
-| `synthesis_memos/` | Paper reading memos |
-| `seed/` | Week 10 artifacts used as inputs |
+| `tenacious_bench_v0.1/` | Dataset partitions (`train/`, `dev/`, `held_out/`) and `smoke/` fixtures |
+| `seed/` | Read-only Week 10 inputs (traces, probes, taxonomy) |
+| `src/generation/` | Authoring pipeline (programmatic, synthesis, dedup, judge filter) |
+| `src/scoring/` | Machine-verifiable scoring evaluator |
+| `src/training/` | LoRA training scripts and hyperparameters |
+| `src/ablations/` | Ablation runners |
+| `tests/` | Unit tests |
+| `docs/` | Project documentation (PRD, methodology, progress, audit memo, plans, memos) |
+| `cost/` | Cost log (`log.csv`, gitignored) |
 
 ## Key files
 
-- `audit_memo.md` — what τ²-Bench misses for Tenacious-specific work
 - `schema.json` — Tenacious-Bench task schema
-- `methodology.md` — path declaration, partitioning, contamination protocol
-- `datasheet.md` — Gebru + Pushkarna documentation
+- `docs/methodology.md` — path declaration, partitioning, contamination protocol
+- `docs/PRD.md` — acceptance criteria
+- `docs/progress.md` — decision log
+- `docs/audit_memo.md` — what τ²-Bench misses for Tenacious-specific work

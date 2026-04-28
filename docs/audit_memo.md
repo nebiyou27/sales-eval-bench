@@ -6,11 +6,11 @@ Target: maximum 600 words, citing at least eight probe IDs and five trace exampl
 
 ## Required Probe Evidence
 
-Use these probes from `seed/day1_seed_inventory.md`: P05, P24, P26, P27, P29, P30, P33, P35.
+Use these probes from `docs/inventories/day1_seed_inventory.md`: P05, P24, P26, P27, P29, P30, P33, P35.
 
 ## Required Trace Evidence
 
-Use these trace examples from `seed/day1_seed_inventory.md`:
+Use these trace examples from `docs/inventories/day1_seed_inventory.md`:
 
 - `a553180f-80d2-4d4b-9a1e-d525b1219cfd` / task 11
 - `89337dd1-bb36-41d7-8530-190df8734cc3` / task 34

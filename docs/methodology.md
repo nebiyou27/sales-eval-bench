@@ -63,7 +63,7 @@ implementation story for a small preference-tuned critic.
 The benchmark rubric is machine-verifiable first. The target semantic dimensions are
 `output_validity`, `ai_maturity_consistency`, `gap_condescension`, `signal_grounding`,
 `style_guide_adherence`, and `next_step_quality`. Each task stores executable scoring rules in
-`schema.json`; `scoring/scoring_evaluator.py` is the forward-compatible command path for local
+`schema.json`; `src/scoring/scoring_evaluator.py` is the forward-compatible command path for local
 scoring, deterministic checks, and any judge-backed score fields that cannot be reduced to a
 regex or JSON-schema constraint.
 
@@ -118,7 +118,7 @@ Three checks before any task enters the held-out partition:
    must include a machine-checkable `retrieval_provenance` field with `url`, `retrieved_at`
    (ISO-8601 UTC), and `source_type`.
 
-Results committed to `generation_scripts/contamination_check.json`.
+Results committed to `src/generation/contamination_check.json`.
 
 ---
 
@@ -136,17 +136,17 @@ To prevent preference leakage (Li et al., 2025), model families are rotated:
 | Chosen-rewrite for preference pairs | Qwen3-Next-80B or another non-judge family | dev-tier |
 
 The same model is never used to generate and judge the same task. Chosen rewrites are first
-screened by `scoring/scoring_evaluator.py`; any LLM score used for acceptance must come from a
+screened by `src/scoring/scoring_evaluator.py`; any LLM score used for acceptance must come from a
 different model family than the rewrite generator. DeepSeek may filter Qwen-generated bulk
 variants, but a DeepSeek-generated rewrite cannot be accepted by a DeepSeek-only judge pass.
 
 For the R4 audit trail, every synthesis, judge, calibration, training, smoke-test, and held-out
-evaluation call is logged to `cost_log.csv` with timestamp, role, model/version, input tokens,
+evaluation call is logged to `cost/log.csv` with timestamp, role, model/version, input tokens,
 output tokens, and USD cost.
 
 ### Synthetic Data Quality Gate
 
-The Day 0 reading memo in `synthesis_memos/synthetic_data_best_practices_v0.md` sets the
+The Day 0 reading memo in `docs/memos/synthetic_data_best_practices_v0.md` sets the
 dataset-authoring rule for Acts II-III: synthetic examples must be controlled, metadata-rich,
 and filtered before partition assignment. Bulk generation should start from probe and
 trace-derived templates, preserve provenance in `metadata`, and pass deterministic checks before
@@ -161,7 +161,7 @@ Tenacious-specific failures rather than generic sales-writing quality.
 
 One labeler hand-labels a 30-task subset against the rubric, then re-labels the same subset
 24 hours later without reference to first labels. The matrix is committed to
-`inter_rater_agreement.md` under a `test_retest` section.
+`docs/inter_rater_agreement.md` under a `test_retest` section.
 
 Threshold: Cohen's kappa >=0.6 on each rubric dimension before the held-out is sealed, with raw
 percent agreement reported alongside kappa for readability. If any dimension drops below kappa
@@ -173,7 +173,7 @@ threshold after one revision.
 
 A second labeler independently labels a 30-task subset sampled from the same calibration pool
 using uniform random sampling with a fixed seed.
-Agreement is reported separately in `inter_rater_agreement.md` under an `inter_rater` section.
+Agreement is reported separately in `docs/inter_rater_agreement.md` under an `inter_rater` section.
 Threshold: Cohen's kappa >=0.6 on every human-reviewed rubric dimension before the held-out is
 sealed, with raw agreement and Wilson 95% CI reported for each dimension. Disagreements are
 adjudicated into rubric edits only; adjudicated labels do not replace the original labels used to
