@@ -14,3 +14,4 @@ outputs/
 *.jsonl.gz
 cost_log.csv
 Challenge_Documents/
+Day_Zero_Implementation_Plan.md
