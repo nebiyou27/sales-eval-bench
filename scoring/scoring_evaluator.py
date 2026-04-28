@@ -67,8 +67,9 @@ def candidate_text(candidate: Any) -> str:
 def score_candidate(task: dict[str, Any], candidate: Any) -> ScoreResult:
     text = candidate_text(candidate)
     lower_text = text.lower()
-    expected_terms = [str(term).lower() for term in task.get("expected_terms", [])]
-    forbidden_terms = [str(term).lower() for term in task.get("forbidden_terms", [])]
+    rubric = task.get("rubric", task)
+    expected_terms = [str(term).lower() for term in rubric.get("expected_terms", [])]
+    forbidden_terms = [str(term).lower() for term in rubric.get("forbidden_terms", [])]
 
     scores = {
         "output_validity": 1.0 if text.strip() else 0.0,
@@ -124,6 +125,12 @@ def main() -> int:
             candidate = load_json(args.candidate)
         except json.JSONDecodeError:
             candidate = args.candidate.read_text(encoding="utf-8")
+        print(json.dumps(score_candidate(task, candidate).to_dict(), indent=2, sort_keys=True))
+        return 0
+
+    if args.task:
+        task = load_json(args.task)
+        candidate = task.get("candidate_output", "")
         print(json.dumps(score_candidate(task, candidate).to_dict(), indent=2, sort_keys=True))
         return 0
 

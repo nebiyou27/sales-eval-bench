@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tenacious-Bench Task",
+  "type": "object",
+  "required": [
+    "task_id",
+    "partition",
+    "source_mode",
+    "difficulty",
+    "failure_dimension",
+    "input",
+    "candidate_output",
+    "ground_truth",
+    "rubric",
+    "scoring_config",
+    "metadata"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "partition": {
+      "type": "string",
+      "enum": ["train", "dev", "held_out"]
+    },
+    "source_mode": {
+      "type": "string",
+      "enum": ["trace_derived", "programmatic", "synthetic", "human_authored"]
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"]
+    },
+    "failure_dimension": {
+      "type": "string",
+      "enum": [
+        "output_validity",
+        "ai_maturity_consistency",
+        "gap_condescension",
+        "signal_grounding",
+        "style_guide_adherence",
+        "next_step_quality"
+      ]
+    },
+    "input": {
+      "type": "object"
+    },
+    "candidate_output": {
+      "type": "string"
+    },
+    "ground_truth": {
+      "type": "object"
+    },
+    "rubric": {
+      "type": "object",
+      "required": ["expected_terms", "forbidden_terms"],
+      "properties": {
+        "expected_terms": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "forbidden_terms": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "scoring_config": {
+      "type": "object",
+      "required": ["deterministic_dimensions"],
+      "properties": {
+        "deterministic_dimensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "output_validity",
+              "ai_maturity_consistency",
+              "gap_condescension",
+              "signal_grounding",
+              "style_guide_adherence",
+              "next_step_quality"
+            ]
+          },
+          "minItems": 1
+        },
+        "judge_dimensions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["probe_id", "source_artifact"],
+      "properties": {
+        "probe_id": {
+          "type": "string",
+          "pattern": "^[PT][0-9]{2}$"
+        },
+        "source_artifact": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

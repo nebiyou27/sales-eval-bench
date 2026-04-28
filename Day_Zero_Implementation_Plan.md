@@ -220,12 +220,12 @@ Step 5 verification:
 
 ### 6. Review The Schema Starter And Day 1 Build Targets
 
-- [ ] Confirm whether a schema starter exists.
-- [ ] Confirm `schema.json` exists or create it on Day 1.
-- [ ] Confirm three dummy tasks are required for Act I.
-- [ ] Confirm the evaluator must score a task plus candidate output with no human in the loop.
-- [ ] Confirm each task needs metadata for source mode, partition, difficulty, and failure dimension.
-- [ ] Confirm scoring dimensions are machine-verifiable wherever possible.
+- [x] Confirm whether a schema starter exists.
+- [x] Confirm `schema.json` exists or create it on Day 1.
+- [x] Confirm three dummy tasks are required for Act I.
+- [x] Confirm the evaluator must score a task plus candidate output with no human in the loop.
+- [x] Confirm each task needs metadata for source mode, partition, difficulty, and failure dimension.
+- [x] Confirm scoring dimensions are machine-verifiable wherever possible.
 
 Detailed steps:
 
@@ -265,6 +265,12 @@ Done means:
 ```text
 The schema/evaluator requirements are clear enough to implement Act I without re-reading the challenge brief.
 ```
+
+Step 6 verification:
+
+- `schema.json` exists at the repo root.
+- `tenacious_bench_v0.1/dev/dummy_tasks.jsonl` contains three valid dummy tasks.
+- All three dummy tasks validate against `schema.json` and receive passing numeric evaluator scores.
 
 ### 7. Run Or Schedule The Unsloth Smoke Test
 
@@ -408,7 +414,7 @@ Use this final checklist at the end of Day 0.
 - [x] Local Python environment verified or blockers listed.
 - [x] Week 10 seed artifacts confirmed present.
 - [x] Candidate trace IDs and probe IDs identified.
-- [ ] Schema/evaluator Day 1 requirements clear.
+- [x] Schema/evaluator Day 1 requirements clear.
 - [ ] Unsloth smoke test completed or scheduled with blocker notes.
 - [ ] Cost log created.
 - [ ] First common-reading memo drafted or assigned to the next immediate work block.
