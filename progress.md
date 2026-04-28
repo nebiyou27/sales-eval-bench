@@ -26,7 +26,11 @@ work, including candidate chosen/rejected examples for Path B preference data.
 preference examples. `training/unsloth_smoke_test_plan.md` schedules a Colab T4 Qwen3.5 Unsloth
 smoke run with fp16, no QLoRA 4-bit, and optional HuggingFace adapter push.
 
-**Next:** Step 8 - create `cost_log.csv` and lock the USD 10 budget buckets.
+**Cost tracking:** `cost_log.csv` and `cost_controls.md` are live. The Week 11 cap is USD 10:
+USD 3-5 for dataset authoring, USD 0-5 for training, USD 2-3 for held-out evaluation, and
+USD 1-2 reserve. No tau2-Bench retail reruns and no eval-tier authoring or dedup on Days 2-3.
+
+**Next:** Step 9 - draft or queue the first common-reading memo.
 
 ---
 

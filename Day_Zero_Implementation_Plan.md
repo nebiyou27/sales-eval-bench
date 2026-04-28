@@ -308,14 +308,14 @@ Step 7 verification:
 
 ### 8. Set Up Cost Tracking
 
-- [ ] `cost_log.csv` exists or is queued for creation.
-- [ ] Budget cap is set at USD 10.
-- [ ] Dataset authoring budget is capped at USD 3-5.
-- [ ] Training budget is capped at USD 0-5.
-- [ ] Held-out evaluation budget is capped at USD 2-3.
-- [ ] Reserve budget is capped at USD 1-2.
-- [ ] No eval-tier model calls are planned for Days 2-3.
-- [ ] Every API or compute charge has timestamp, bucket, model/provider, purpose, and amount.
+- [x] `cost_log.csv` exists or is queued for creation.
+- [x] Budget cap is set at USD 10.
+- [x] Dataset authoring budget is capped at USD 3-5.
+- [x] Training budget is capped at USD 0-5.
+- [x] Held-out evaluation budget is capped at USD 2-3.
+- [x] Reserve budget is capped at USD 1-2.
+- [x] No eval-tier model calls are planned for Days 2-3.
+- [x] Every API or compute charge has timestamp, bucket, model/provider, purpose, and amount.
 
 Detailed steps:
 
@@ -335,6 +335,12 @@ Done means:
 ```text
 The project can prove cost discipline, not merely claim it.
 ```
+
+Step 8 verification:
+
+- `cost_log.csv` exists with the required columns and starting budget rows.
+- `cost_controls.md` documents the USD 10 cap, bucket limits, no tau2-Bench retail reruns, and no eval-tier authoring/dedup on Days 2-3.
+- Starting budget rows sum to USD 10.
 
 ### 9. Draft The First Common Reading Memo
 
@@ -424,7 +430,7 @@ Use this final checklist at the end of Day 0.
 - [x] Candidate trace IDs and probe IDs identified.
 - [x] Schema/evaluator Day 1 requirements clear.
 - [x] Unsloth smoke test completed or scheduled with blocker notes.
-- [ ] Cost log created.
+- [x] Cost log created.
 - [ ] First common-reading memo drafted or assigned to the next immediate work block.
 - [ ] Day 1 work queue prepared.
 
