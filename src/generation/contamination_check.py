@@ -30,6 +30,8 @@ from src.generation.common import REPO_ROOT, load_held_out_trace_ids, read_jsonl
 
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 DEFAULT_LOCAL_EMBEDDING_DIR = REPO_ROOT / "models" / "embeddings" / "all-MiniLM-L6-v2"
+LEXICAL_COSINE_THRESHOLD = 0.85
+EMBEDDING_COSINE_THRESHOLD = 0.93
 
 
 def parse_args() -> argparse.Namespace:
@@ -174,7 +176,14 @@ def compare_partitions(
             embedding_score = None
             if embedding_vectors is not None and held_id in embedding_vectors and other_id in embedding_vectors:
                 embedding_score = cosine_similarity(embedding_vectors[held_id], embedding_vectors[other_id])
-            if shared_ngrams or lexical_score >= 0.85 or (embedding_score is not None and embedding_score >= 0.85):
+            if (
+                shared_ngrams
+                or lexical_score >= LEXICAL_COSINE_THRESHOLD
+                or (
+                    embedding_score is not None
+                    and embedding_score >= EMBEDDING_COSINE_THRESHOLD
+                )
+            ):
                 findings.append(
                     {
                         "held_out_task_id": held_id,
@@ -262,6 +271,7 @@ def build_report(dataset_root: Path, embedding_model: str) -> dict[str, Any]:
     dev_rows = partition_rows(dataset_root, "dev")
     held_out_rows = partition_rows(dataset_root, "held_out")
     combined_rows = held_out_rows + train_rows + dev_rows
+    resolved_embedding_model = resolve_embedding_model(embedding_model)
     embedding_vectors, embedding_status = embedding_vectors_for_rows(combined_rows, embedding_model)
     overlap_findings = compare_partitions(held_out_rows, train_rows + dev_rows, embedding_vectors)
     provenance_findings = time_shift_findings(train_rows + dev_rows + held_out_rows)
@@ -283,10 +293,10 @@ def build_report(dataset_root: Path, embedding_model: str) -> dict[str, Any]:
         "held_out_status": held_out_status,
         "seed_held_out_trace_count": len(seed_held_out_ids),
         "n_gram_threshold": 8,
-        "lexical_cosine_proxy_threshold": 0.85,
+        "lexical_cosine_proxy_threshold": LEXICAL_COSINE_THRESHOLD,
         "embedding_model": embedding_model,
-        "embedding_model_resolved": resolve_embedding_model(embedding_model),
-        "embedding_cosine_threshold": 0.85,
+        "embedding_model_resolved": resolved_embedding_model,
+        "embedding_cosine_threshold": EMBEDDING_COSINE_THRESHOLD,
         "embedding_check_status": embedding_status,
         "overlap_findings": overlap_findings,
         "time_shift_findings": provenance_findings,

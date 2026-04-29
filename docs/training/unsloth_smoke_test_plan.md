@@ -25,10 +25,11 @@ Prove that the Day 5 training path can run on Google Colab T4 before the real pr
 2. Open the smallest available Qwen3 Unsloth notebook and set the model to Qwen3-0.6B for the first run.
 3. Install or update Unsloth in the notebook.
 4. Upload or fetch `tenacious_bench_v0.1/smoke/dummy_orpo_preferences.jsonl`.
-5. Convert the five records into the notebook's preference format with `prompt`, `chosen`, and `rejected`.
-6. Run a minimal LoRA/ORPO training pass.
-7. Record compile time, total runtime, package versions, GPU type, and any errors.
-8. Push the adapter to a private or disposable HuggingFace repo if the smoke run completes.
+5. Run `.\.venv\Scripts\python.exe src/training/prepare_orpo_data.py --input tenacious_bench_v0.1/smoke/dummy_orpo_preferences.jsonl --output C:\tmp\dummy_orpo_prepared.jsonl --dry-run` locally first and confirm `prepared_count=5`, `dropped_count=0`, and `output_partition=train`.
+6. Convert the five records into the notebook's preference format with `prompt`, `chosen`, and `rejected`.
+7. Run a minimal LoRA/ORPO training pass.
+8. Record compile time, total runtime, package versions, GPU type, and any errors.
+9. Push the adapter to a private or disposable HuggingFace repo if the smoke run completes.
 
 ## Expected Notes
 

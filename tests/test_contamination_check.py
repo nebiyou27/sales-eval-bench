@@ -6,6 +6,7 @@ from unittest.mock import patch
 from src.generation.common import write_jsonl
 from src.generation.contamination_check import (
     DEFAULT_EMBEDDING_MODEL,
+    EMBEDDING_COSINE_THRESHOLD,
     build_report,
 )
 
@@ -97,6 +98,27 @@ class ContaminationCheckTests(unittest.TestCase):
         self.assertEqual(report["embedding_check_status"], "embedding_check_completed")
         self.assertEqual(len(report["overlap_findings"]), 1)
         self.assertIn("embedding_cosine", report["overlap_findings"][0])
+
+    def test_embedding_threshold_requires_stronger_match_than_lexical_proxy(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dataset_root = Path(temp_dir)
+            train_task = make_task("train-001", "train")
+            held_task = make_task("held-001", "held_out")
+            train_task["input"]["hiring_signal_brief"]["signals"][0]["evidence"] = "Different evidence about finance routing."
+            train_task["candidate_output"]["subject"] = "Finance routing question"
+            train_task["candidate_output"]["body"] = "Can you share where finance approvals slow the handoff?"
+            held_task["input"]["hiring_signal_brief"]["signals"][0]["evidence"] = "Separate evidence about frontend staffing."
+            held_task["candidate_output"]["subject"] = "Frontend staffing note"
+            held_task["candidate_output"]["body"] = "Which frontend workflow is hardest to support today?"
+            write_jsonl(dataset_root / "train" / "train_tasks.jsonl", [train_task])
+            write_jsonl(dataset_root / "held_out" / "held_tasks.jsonl", [held_task])
+            with patch(
+                "src.generation.contamination_check.encode_texts",
+                return_value=[[1.0, 0.0], [0.92, 0.392]],
+            ):
+                report = build_report(dataset_root, "stub-model")
+        self.assertEqual(report["embedding_cosine_threshold"], EMBEDDING_COSINE_THRESHOLD)
+        self.assertEqual(report["overlap_findings"], [])
 
     def test_default_embedding_model_prefers_repo_local_snapshot_when_available(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

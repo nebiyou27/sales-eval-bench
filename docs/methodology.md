@@ -50,6 +50,11 @@ budget is small and the default runtime is Colab T4. The training data naturally
 each example can be represented as a chosen Tenacious-compliant output and a rejected unsafe,
 unsupported, invalid, or off-tone output.
 
+The current `train/` partition stores benchmark task seeds, not ORPO-ready preference pairs.
+Preference rows are materialized separately during training prep, where each row must include a
+prompt plus chosen/rejected outputs and explicit model metadata so the chosen-rewrite judge can be
+validated against both the rewrite generator and the rejected-output author.
+
 DPO is the foundational preference-optimization baseline, but it is less attractive for this
 project because it requires maintaining a reference policy during training. SimPO is also
 reference-free and strong, but its average-log-probability reward and length-related calibration
@@ -127,6 +132,18 @@ Results are written to `src/generation/contamination_check.json`. A report only 
 embedding-backed pass when `embedding_check_status=embedding_check_completed`; fallback statuses are
 honest scaffolding states, not evidence that semantic decontamination is fully closed.
 
+### Current Integrity Controls
+
+| Control | Current value | Enforced by | Rule |
+|---|---|---|---|
+| Held-out trace leakage check | active | `assert_no_held_out_leakage(...)` | Train/dev authoring cannot cite any trace ID found in `seed/held_out_traces.jsonl`. |
+| Source-trace overlap audit | active | `source_trace_findings(...)` | Contamination audit fails if any train/dev task cites a seed held-out trace ID or shares `metadata.source_trace_ids` with a held-out partition task. |
+| Model-family rotation | active | `enforce_rotation(...)` | The same model family cannot both generate and judge the same synthetic task or ORPO chosen-rewrite pair. |
+| Embedding cosine threshold | `0.93` | `EMBEDDING_COSINE_THRESHOLD` | Held-out vs. train/dev pairs at or above this cosine are treated as contamination candidates. |
+| Lexical cosine threshold | `0.85` | `LEXICAL_COSINE_THRESHOLD` | Held-out vs. train/dev pairs at or above this lexical proxy are treated as contamination candidates. |
+| N-gram overlap threshold | `8` | `n_gram_threshold` in contamination reports | Any shared 8-gram between held-out and train/dev tasks is treated as contamination evidence. |
+| Preference prep strictness | default `off`; opt-in `--strict` | `src/training/prepare_orpo_data.py` | Non-strict mode writes valid prepared pairs even if some rows are dropped; `--strict` converts any dropped row into a non-zero exit. |
+
 ---
 
 ## Multi-LLM Routing Policy
@@ -143,10 +160,19 @@ To prevent preference leakage (Li et al., 2025), model families are rotated:
 | Chosen-rewrite for preference pairs | Qwen3-Next-80B or another non-judge family | dev-tier |
 
 The same model is never used to generate and judge the same task. This policy is now enforced in
-code for the synthesis path through `src/generation/synthesis_policy.py`. Chosen rewrites are
-first screened by `src/scoring/scoring_evaluator.py`; any LLM score used for acceptance must come
-from a different model family than the rewrite generator. DeepSeek may filter Qwen-generated bulk
-variants, but a DeepSeek-generated rewrite cannot be accepted by a DeepSeek-only judge pass.
+code for the synthesis path through `src/generation/synthesis_policy.py` and for ORPO-preference
+prep through `src/training/prepare_orpo_data.py`. Chosen rewrites are first screened by
+`src/scoring/scoring_evaluator.py`; any LLM score used for acceptance must come from a different
+model family than both the rewrite generator and the rejected-output author. DeepSeek may filter
+Qwen-generated bulk variants, but a DeepSeek-generated rewrite cannot be accepted by a
+DeepSeek-only judge pass.
+
+Week 10 `seed/trace_log.jsonl` preserves simulation IDs, task IDs, reward, timing, and cost, but
+it does not preserve the underlying model-family metadata. Because local evidence cannot recover the
+rejected-output family after the fact, ORPO-preference prep requires explicit `rejected_model`,
+`source_task_id`, and `source_partition` metadata on every record before the pair can enter train.
+Preference records use `output_partition` for the destination split and `source_partition` for the
+origin task split so the train-target semantics stay explicit.
 
 For the R4 audit trail, every synthesis, judge, calibration, training, smoke-test, and held-out
 evaluation call is logged to `cost/log.csv` with timestamp, role, model/version, input tokens,

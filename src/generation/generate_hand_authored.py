@@ -11,7 +11,13 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from src.generation.common import REPO_ROOT, validate_task, write_jsonl
+from src.generation.common import (
+    REPO_ROOT,
+    assert_no_held_out_leakage,
+    load_held_out_trace_ids,
+    validate_task,
+    write_jsonl,
+)
 
 
 HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
@@ -369,6 +375,7 @@ def parse_args() -> argparse.Namespace:
 
 def materialize_tasks(partition: str) -> list[dict[str, Any]]:
     tasks: list[dict[str, Any]] = []
+    held_out_ids = load_held_out_trace_ids()
     partition_specs = [spec for spec in HAND_AUTHORED_SPECS if spec["partition"] == partition]
     for index, spec in enumerate(partition_specs, start=1):
         task = json.loads(json.dumps(spec))
@@ -377,6 +384,7 @@ def materialize_tasks(partition: str) -> list[dict[str, Any]]:
         task["task_id"] = f"{partition}-hand-authored-{index:03d}-{suffix}"
         task["partition"] = partition
         task["source_mode"] = "hand_authored"
+        assert_no_held_out_leakage(task, partition, held_out_ids)
         validate_task(task)
         tasks.append(task)
     return tasks
