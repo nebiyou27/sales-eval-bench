@@ -1,10 +1,11 @@
-"""Scaffold contamination checks for Tenacious-Bench partitions.
+"""Contamination checks for Tenacious-Bench partitions.
 
 Current checks:
 - 8-gram overlap between held-out tasks and train/dev tasks
+- embedding similarity between held-out and train/dev tasks when a local
+  sentence-embedding model is available
+- lexical cosine as supporting evidence and fallback signal
 - time-shift provenance presence for synthetic signal-grounding tasks
-- lexical cosine proxy for near-duplicate detection (placeholder until the
-  embedding model is added to the toolchain)
 """
 
 from __future__ import annotations
@@ -18,10 +19,16 @@ from pathlib import Path
 import sys
 from typing import Any
 
+import torch
+from transformers import AutoModel, AutoTokenizer
+
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from src.generation.common import REPO_ROOT, load_held_out_trace_ids, read_jsonl, validate_task
+
+
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,6 +44,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=REPO_ROOT / "src" / "generation" / "contamination_check.json",
         help="Where to write the contamination report.",
+    )
+    parser.add_argument(
+        "--embedding-model",
+        default=DEFAULT_EMBEDDING_MODEL,
+        help="Local embedding model name or path for semantic contamination checks.",
     )
     return parser.parse_args()
 
@@ -93,7 +105,50 @@ def lexical_cosine(left: str, right: str) -> float:
     return numerator / (left_norm * right_norm)
 
 
-def compare_partitions(held_out_rows: list[dict[str, Any]], other_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def cosine_similarity(left: list[float], right: list[float]) -> float:
+    numerator = sum(a * b for a, b in zip(left, right))
+    left_norm = math.sqrt(sum(a * a for a in left))
+    right_norm = math.sqrt(sum(b * b for b in right))
+    if left_norm == 0.0 or right_norm == 0.0:
+        return 0.0
+    return numerator / (left_norm * right_norm)
+
+
+def mean_pool(last_hidden_state: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+    mask = attention_mask.unsqueeze(-1).expand(last_hidden_state.size()).float()
+    masked = last_hidden_state * mask
+    summed = masked.sum(dim=1)
+    counts = mask.sum(dim=1).clamp(min=1e-9)
+    return summed / counts
+
+
+def embedding_backend(model_name_or_path: str) -> tuple[AutoTokenizer, AutoModel]:
+    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, local_files_only=True)
+    model = AutoModel.from_pretrained(model_name_or_path, local_files_only=True)
+    model.eval()
+    return tokenizer, model
+
+
+def encode_texts(texts: list[str], model_name_or_path: str) -> list[list[float]]:
+    tokenizer, model = embedding_backend(model_name_or_path)
+    encoded_vectors: list[list[float]] = []
+    batch_size = 16
+    for start in range(0, len(texts), batch_size):
+        batch = texts[start : start + batch_size]
+        encoded = tokenizer(batch, padding=True, truncation=True, return_tensors="pt")
+        with torch.no_grad():
+            outputs = model(**encoded)
+            pooled = mean_pool(outputs.last_hidden_state, encoded["attention_mask"])
+            normalized = torch.nn.functional.normalize(pooled, p=2, dim=1)
+        encoded_vectors.extend(normalized.cpu().tolist())
+    return encoded_vectors
+
+
+def compare_partitions(
+    held_out_rows: list[dict[str, Any]],
+    other_rows: list[dict[str, Any]],
+    embedding_vectors: dict[str, list[float]] | None,
+) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     other_payload = [
         (row.get("task_id", ""), normalized_text(row), ngrams(normalized_text(row)))
@@ -106,13 +161,17 @@ def compare_partitions(held_out_rows: list[dict[str, Any]], other_rows: list[dic
         for other_id, other_text, other_ngrams in other_payload:
             shared_ngrams = held_ngrams & other_ngrams
             lexical_score = lexical_cosine(held_text, other_text)
-            if shared_ngrams or lexical_score >= 0.85:
+            embedding_score = None
+            if embedding_vectors is not None and held_id in embedding_vectors and other_id in embedding_vectors:
+                embedding_score = cosine_similarity(embedding_vectors[held_id], embedding_vectors[other_id])
+            if shared_ngrams or lexical_score >= 0.85 or (embedding_score is not None and embedding_score >= 0.85):
                 findings.append(
                     {
                         "held_out_task_id": held_id,
                         "other_task_id": other_id,
                         "shared_8grams": len(shared_ngrams),
                         "lexical_cosine_proxy": round(lexical_score, 3),
+                        "embedding_cosine": None if embedding_score is None else round(embedding_score, 3),
                     }
                 )
     return findings
@@ -173,11 +232,27 @@ def source_trace_findings(
     return findings
 
 
-def build_report(dataset_root: Path) -> dict[str, Any]:
+def embedding_vectors_for_rows(
+    rows: list[dict[str, Any]],
+    model_name_or_path: str,
+) -> tuple[dict[str, list[float]] | None, str]:
+    if not rows:
+        return {}, "embedding_check_skipped_no_rows"
+    texts = [normalized_text(row) for row in rows]
+    try:
+        vectors = encode_texts(texts, model_name_or_path)
+    except Exception as exc:
+        return None, f"embedding_check_unavailable:{type(exc).__name__}"
+    return {row.get("task_id", ""): vector for row, vector in zip(rows, vectors)}, "embedding_check_completed"
+
+
+def build_report(dataset_root: Path, embedding_model: str) -> dict[str, Any]:
     train_rows = partition_rows(dataset_root, "train")
     dev_rows = partition_rows(dataset_root, "dev")
     held_out_rows = partition_rows(dataset_root, "held_out")
-    overlap_findings = compare_partitions(held_out_rows, train_rows + dev_rows)
+    combined_rows = held_out_rows + train_rows + dev_rows
+    embedding_vectors, embedding_status = embedding_vectors_for_rows(combined_rows, embedding_model)
+    overlap_findings = compare_partitions(held_out_rows, train_rows + dev_rows, embedding_vectors)
     provenance_findings = time_shift_findings(train_rows + dev_rows + held_out_rows)
     seed_held_out_ids = load_held_out_trace_ids()
     trace_findings = source_trace_findings(train_rows, dev_rows, held_out_rows, seed_held_out_ids)
@@ -198,7 +273,9 @@ def build_report(dataset_root: Path) -> dict[str, Any]:
         "seed_held_out_trace_count": len(seed_held_out_ids),
         "n_gram_threshold": 8,
         "lexical_cosine_proxy_threshold": 0.85,
-        "embedding_check_status": "proxy_only_pending_embedding_model",
+        "embedding_model": embedding_model,
+        "embedding_cosine_threshold": 0.85,
+        "embedding_check_status": embedding_status,
         "overlap_findings": overlap_findings,
         "time_shift_findings": provenance_findings,
         "source_trace_findings": trace_findings,
@@ -209,7 +286,7 @@ def build_report(dataset_root: Path) -> dict[str, Any]:
 
 def main() -> int:
     args = parse_args()
-    report = build_report(args.dataset_root)
+    report = build_report(args.dataset_root, args.embedding_model)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report, indent=2))

@@ -113,12 +113,16 @@ Three checks before any task enters the held-out partition:
 2. **Embedding similarity** - cosine similarity below 0.85 between held-out and training tasks
    using `all-MiniLM-L6-v2`. Scores at or above 0.85 are treated as near-duplicate candidates,
    matching common RAG and eval decontamination practice; borderline cases are manually removed
-   or rewritten before sealing.
+   or rewritten before sealing. The current code attempts this pass through the local
+   `transformers` stack first and reports an explicit unavailable-model status if the embedding
+   weights are not present on disk.
 3. **Time-shift verification** - any task referencing public signal (layoffs, job posts, funding)
    must include a machine-checkable `retrieval_provenance` field with `url`, `retrieved_at`
    (ISO-8601 UTC), and `source_type`.
 
-Results committed to `src/generation/contamination_check.json`.
+Results are written to `src/generation/contamination_check.json`. A report only counts as a full
+embedding-backed pass when `embedding_check_status=embedding_check_completed`; fallback statuses are
+honest scaffolding states, not evidence that semantic decontamination is fully closed.
 
 ---
 
@@ -135,9 +139,10 @@ To prevent preference leakage (Li et al., 2025), model families are rotated:
 | Calibration spot-check | Claude/GPT-class frontier model | eval-tier, max 50 tasks |
 | Chosen-rewrite for preference pairs | Qwen3-Next-80B or another non-judge family | dev-tier |
 
-The same model is never used to generate and judge the same task. Chosen rewrites are first
-screened by `src/scoring/scoring_evaluator.py`; any LLM score used for acceptance must come from a
-different model family than the rewrite generator. DeepSeek may filter Qwen-generated bulk
+The same model is never used to generate and judge the same task. This policy is now enforced in
+code for the synthesis path through `src/generation/synthesis_policy.py`. Chosen rewrites are
+first screened by `src/scoring/scoring_evaluator.py`; any LLM score used for acceptance must come
+from a different model family than the rewrite generator. DeepSeek may filter Qwen-generated bulk
 variants, but a DeepSeek-generated rewrite cannot be accepted by a DeepSeek-only judge pass.
 
 For the R4 audit trail, every synthesis, judge, calibration, training, smoke-test, and held-out

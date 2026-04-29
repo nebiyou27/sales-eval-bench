@@ -4,6 +4,83 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-29 - Contamination check upgraded to real embeddings with honest fallback
+
+**Completed:** The contamination checker now attempts a real local embedding pass instead of
+claiming only a proxy path.
+
+**Changes:**
+
+- Upgraded `src/generation/contamination_check.py` to try
+  `sentence-transformers/all-MiniLM-L6-v2` through the local `transformers` stack.
+- Added cosine-similarity scoring over sentence embeddings while keeping 8-gram overlap and
+  lexical cosine as supporting signals.
+- Added explicit report fields for `embedding_model`, `embedding_cosine_threshold`, and
+  `embedding_check_status` so the output states whether embeddings truly ran.
+- Added unit tests for both the completed-embedding path and the unavailable-model fallback path.
+
+**Verification:** `& .\.venv\Scripts\python.exe -m unittest tests.test_contamination_check` passes.
+`& .\.venv\Scripts\python.exe src/generation/contamination_check.py` now reports
+`train=2`, `dev=8`, `held_out=2`, and `pass=true`.
+
+**Scope note:** The code path is now real, but this machine does not yet have the MiniLM weights
+cached locally, so the current report honestly shows `embedding_check_unavailable:OSError`
+instead of pretending the embedding pass succeeded.
+
+**Next:** Update repo-facing docs to match the implemented authoring, rotation, and contamination
+state.
+
+---
+
+## 2026-04-29 - Hand-authored generator and partition seeds added
+
+**Completed:** The fourth Week 11 authoring mode is now runnable, and `train/` is no longer an
+empty placeholder.
+
+**Changes:**
+
+- Added `generate_hand_authored.py` with explicit hand-authored tasks grounded in Week 10 probe
+  definitions.
+- Added two `train` tasks covering P26 fabricated-source risk and P27 peer-gap abstention.
+- Added two local `held_out` tasks covering P32 bench-capacity over-commitment and P35
+  multi-contact account framing consistency.
+- Added generator tests and removed the stale `train/.gitkeep` placeholder.
+
+**Verification:** `& .\.venv\Scripts\python.exe src/generation/generate_hand_authored.py --partition train`
+writes `tenacious_bench_v0.1/train/hand_authored_tasks.jsonl`. The corresponding unit test passes.
+
+**Scope note:** `tenacious_bench_v0.1/held_out/` remains gitignored by repo policy, so the local
+held-out seeds exist for contamination and eval scaffolding but are not pushed to the remote.
+
+**Next:** Replace the contamination lexical proxy with a real local embedding path while keeping an
+honest fallback state.
+
+---
+
+## 2026-04-29 - Synthesis judge policy and R2 rotation enforcement added
+
+**Completed:** The synthesis pipeline now has committed prompts, code-enforced generate/judge
+family separation, and a live judge-filter path.
+
+**Changes:**
+
+- Added `synthesis_policy.py` with committed generation and judge prompts, prompt versioning, model
+  family detection, and `enforce_rotation(...)`.
+- Updated `generate_synthesis.py` to stamp prompt/model metadata, require a distinct judge model in
+  live mode, log live synthesis calls, and persist judge rejections separately.
+- Added unit tests for model-family normalization and rotation-policy enforcement.
+
+**Verification:** `py_compile` passes for the synthesis modules, the synthesis-policy unit tests
+pass, and `& .\.venv\Scripts\python.exe src/generation/generate_synthesis.py` regenerates the
+offline prompt manifest with the committed prompt version and judge-model metadata.
+
+**Scope note:** The live synthesis path is implemented, but no OpenRouter budget has been spent in
+this repo pass; the default verification remains offline prompt-manifest generation.
+
+**Next:** Add the missing hand-authored authoring mode and start filling `train/`.
+
+---
+
 ## 2026-04-29 - Trace-derived task generation added
 
 **Completed:** The third Week 11 authoring mode is now runnable under `src/generation/`.
@@ -22,9 +99,9 @@ Decision log. Most recent entry first.
 `tenacious_bench_v0.1/dev/trace_derived_tasks.jsonl` with schema-valid tasks and audited source
 trace IDs from `seed/trace_log.jsonl`.
 
-**Scope note:** The runnable authoring modes now cover 3 of the 4 Week 11 paths: trace-derived,
-programmatic, and synthesis scaffold. Hand-authored adversarial tasks and live judge-filtering are
-still pending.
+**Scope note:** At the time of this entry, the runnable authoring modes covered 3 of the 4 Week 11
+paths: trace-derived, programmatic, and synthesis scaffold. Hand-authored adversarial tasks and
+live judge-filtering were still pending.
 
 **Next:** Add judge-filter logic and committed prompts for synthesis, then start filling
 `train/` and `held_out/` with partition-safe tasks.
@@ -49,8 +126,9 @@ still pending.
 `python src/generation/contamination_check.py` writes a report and now distinguishes
 `pending_no_held_out_data` from a clean checked held-out partition.
 
-**Scope note:** This scaffold currently covers 2 of the 4 Week 11 authoring modes in runnable
-code: programmatic and synthesis. Trace-derived and hand-authored authoring are still pending.
+**Scope note:** At the time of this entry, this scaffold covered 2 of the 4 Week 11 authoring
+modes in runnable code: programmatic and synthesis. Trace-derived and hand-authored authoring were
+still pending.
 
 **Next:** Expand the task batch, add trace-derived task generation, and wire the live synthesis
 path to judge-filtering and cost logging.
@@ -171,7 +249,7 @@ work, including candidate chosen/rejected examples for Path B preference data.
 preference examples. `training/unsloth_smoke_test_plan.md` schedules a Colab T4 Qwen3-0.6B Unsloth
 smoke run with fp16, Qwen3-1.7B as fallback only after a stable T4 run, and optional HuggingFace adapter push.
 
-**Cost tracking:** `cost_log.csv` and `cost_controls.md` are live. The Week 11 cap is USD 10:
+**Cost tracking:** `cost/log.csv` and `cost_controls.md` are live. The Week 11 cap is USD 10:
 USD 3-5 for dataset authoring, USD 0-5 for training, USD 2-3 for held-out evaluation, and
 USD 1-2 reserve. No tau2-Bench retail reruns and no eval-tier authoring or dedup on Days 2-3.
 
