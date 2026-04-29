@@ -61,6 +61,26 @@ reference-free and strong, but its average-log-probability reward and length-rel
 are less convenient for short sales-outreach and JSON-validity tasks. ORPO gives the cleanest
 implementation story for a small preference-tuned critic.
 
+### Literature Anchors
+
+The methodology is intentionally tied to a small number of explicit references rather than a broad,
+generic benchmark recipe:
+
+- **ORPO**: Hong, Lee, and Thorne (2024) for reference-free preference optimization with a combined
+  supervised-plus-preference objective.
+- **DPO baseline comparison**: Rafailov et al. (2023) as the main contrast case for
+  reference-model-based preference optimization.
+- **Synthetic data controls**: Liu et al. (2024), "Best Practices and Lessons Learned on Synthetic
+  Data," for the rule that synthetic examples should be controlled, provenance-rich, and filtered
+  rather than treated as free-form volume.
+- **Dataset documentation**: Gebru et al. (2021), "Datasheets for Datasets," plus Pushkarna-style
+  layered documentation guidance for the benchmark datasheet structure.
+- **N-gram decontamination precedent**: the PaLM benchmark-contamination practice of treating shared
+  8-grams as evidence of overlap risk, which is why this repo uses an 8-gram threshold in
+  `src/generation/contamination_check.py`.
+- **Embedding model**: `sentence-transformers/all-MiniLM-L6-v2`, used here as a compact semantic
+  near-duplicate detector rather than as a retrieval model.
+
 ---
 
 ## Rubric And Scoring
@@ -131,6 +151,28 @@ Three checks before any task enters the held-out partition:
 Results are written to `src/generation/contamination_check.json`. A report only counts as a full
 embedding-backed pass when `embedding_check_status=embedding_check_completed`; fallback statuses are
 honest scaffolding states, not evidence that semantic decontamination is fully closed.
+
+### Current Contamination Results
+
+The latest committed contamination report is an embedding-backed pass over the full current corpus.
+It checked `132` train rows, `79` dev rows, and `14` held-out rows against `17` seed held-out trace
+IDs. The result was `pass=true` with:
+
+- `0` overlap findings from the 8-gram, lexical-cosine, and embedding-cosine comparison pass,
+- `0` time-shift provenance findings,
+- `0` source-trace leakage findings.
+
+That means the current committed `held_out` split is clean against the present `train` and `dev`
+surfaces under all three contamination checks. No active rows required rewriting or removal in the
+current pass. The relevant output is persisted in `src/generation/contamination_check.json`, where
+`embedding_check_status=embedding_check_completed` confirms that this was not merely a lexical-only
+fallback run.
+
+The honest caveat is that "zero current findings" does not mean "zero remediation ever happened."
+Earlier in benchmark construction, three provisional held-out specs were replaced before sealing
+after contamination review surfaced overlap risk; those replacements are logged in
+`docs/progress.md`. The methodology therefore treats contamination as an iterative gate, not a
+single ceremonial check at the end.
 
 ### Current Integrity Controls
 
