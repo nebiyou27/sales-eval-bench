@@ -4,6 +4,30 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-29 - Python 3.11 environment repaired
+
+**Completed:** The Day Zero local-environment blocker is now closed with a fresh Python 3.11
+virtual environment.
+
+**Changes:**
+
+- Installed Python 3.11.9 locally and rebuilt `.venv` against `py -3.11`.
+- Reinstalled the pinned dependencies from `requirements.txt`.
+- Re-ran the import proof for `transformers`, `peft`, `trl`, `datasets`, `accelerate`, and
+  `bitsandbytes`.
+- Re-ran the local evaluator smoke command on the rebuilt environment.
+
+**Verification:** `& .\.venv\Scripts\python.exe --version` returns `Python 3.11.9`.
+`python -c "import transformers, peft, trl, datasets, accelerate, bitsandbytes; print(transformers.__version__, peft.__version__, trl.__version__, datasets.__version__, accelerate.__version__, bitsandbytes.__version__)"` prints `5.6.2 0.19.1 1.3.0 4.8.5 1.13.0 0.49.2`.
+`python src/scoring/scoring_evaluator.py` returns `"smoke_passed": true`.
+
+**Why now:** The earlier Day Zero record incorrectly assumed Python 3.11+ was already active.
+Closing that gap before more dependency or dataset-authoring work keeps the environment proof honest.
+
+**Next:** Continue Day 1 Act I with `docs/audit_memo.md`, schema tightening, and dataset-authoring script scaffolding.
+
+---
+
 ## 2026-04-28 - Repo layout refactor
 
 **Completed:** Folder structure refactored before Day 1 work begins.
