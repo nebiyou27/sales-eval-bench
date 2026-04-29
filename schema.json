@@ -2,6 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Tenacious-Bench Task",
   "type": "object",
+  "$defs": {
+    "judgeDimension": {
+      "type": "string",
+      "enum": [
+        "output_validity",
+        "ai_maturity_consistency",
+        "gap_condescension",
+        "signal_grounding",
+        "style_guide_adherence",
+        "next_step_quality"
+      ]
+    },
+    "retrievalProvenance": {
+      "type": "object",
+      "required": ["url", "retrieved_at", "source_type"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_type": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    }
+  },
   "required": [
     "task_id",
     "partition",
@@ -44,13 +77,16 @@
       ]
     },
     "input": {
-      "type": "object"
+      "type": "object",
+      "minProperties": 1
     },
     "candidate_output": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "ground_truth": {
-      "type": "object"
+      "type": "object",
+      "minProperties": 1
     },
     "rubric": {
       "type": "object",
@@ -88,7 +124,8 @@
         },
         "judge_dimensions": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "$ref": "#/$defs/judgeDimension" },
+          "uniqueItems": true
         }
       },
       "additionalProperties": true
@@ -99,14 +136,37 @@
       "properties": {
         "probe_id": {
           "type": "string",
-          "pattern": "^[PT][0-9]{2}$"
+          "pattern": "^P[0-9]{2}$"
         },
         "source_artifact": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
+        },
+        "retrieval_provenance": {
+          "$ref": "#/$defs/retrievalProvenance"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "minProperties": 2
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source_mode": { "const": "synthetic" },
+          "failure_dimension": { "const": "signal_grounding" }
+        },
+        "required": ["source_mode", "failure_dimension"]
+      },
+      "then": {
+        "properties": {
+          "metadata": {
+            "required": ["retrieval_provenance"]
+          }
+        }
+      }
+    }
+  ],
   "additionalProperties": false
 }
