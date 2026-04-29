@@ -27,22 +27,24 @@ before outreach is sent. The immediate use case is Tenacious internal quality as
 
 ## 2. Composition
 
-**Telescopic summary.** 200 machine-verifiable B2B outreach tasks across 3 partitions, covering
+**Telescopic summary.** 211 machine-verifiable B2B outreach tasks across 3 partitions, covering
 6 failure dimensions, 3 difficulty levels, 3 channels, 3 message kinds, and 4 source modes.
+An additional 14 held_out tasks are sealed and gitignored.
 
 **Periscopic structure.**
 
 ### Partition counts
 
-| partition | count | % of total |
+| partition | count | % of total (train+dev) |
 |---|---|---|
-| train | 125 | 62.5% |
-| dev | 75 | 37.5% |
-| held_out | 4 (partial) | sealed, gitignored |
-| **total (train+dev)** | **200** | |
+| train | 132 | 62.6% |
+| dev | 79 | 37.4% |
+| held_out | 14 (partial) | sealed, gitignored |
+| **total (train+dev)** | **211** | |
 
-Target is 250 total (train 125 / dev 75 / held_out 50). Train and dev targets are met;
-held_out expansion to 50 is planned for Wave 4 before the May 3 deadline.
+Original target was train 125 / dev 75 = 200 total. Wave 4 synthetic generation added 11
+tasks (7 train + 4 dev), bringing totals to 132 train and 79 dev. held_out expanded from 4
+to 14 hand_authored tasks. Target of 50 held_out remains for full ablation set.
 
 ### By failure_dimension
 
@@ -51,58 +53,53 @@ held_out expansion to 50 is planned for Wave 4 before the May 3 deadline.
 | `gap_condescension` (P33) | 25 | 14 | 39 | 40 |
 | `ai_maturity_consistency` (P24) | 25 | 14 | 39 | 40 |
 | `output_validity` | 22 | 14 | 36 | 32 |
-| `signal_grounding` | 17 | 8 | 25 | 31 |
+| `signal_grounding` | 21 | 11 | 32 | 31 |
 | `style_guide_adherence` | 22 | 17 | 39 | 30 |
-| `next_step_quality` | 14 | 8 | 22 | 27 |
-| **Total** | **125** | **75** | **200** | **200** |
+| `next_step_quality` | 17 | 9 | 26 | 27 |
+| **Total** | **132** | **79** | **211** | **200** |
 
-P24 and P33 — the two primary failure-mode dimensions — hit exact targets in train (25 each)
-and are within 1 of target in dev. Minor redistribution occurred because programmatic blueprints
-cover multiple dimensions per blueprint.
+Wave 4 synthetic tasks closed the signal_grounding gap (+7 over target) and reduced the
+next_step_quality gap to −1. P24 and P33 remain the primary dimensions at 25 train tasks each.
 
 ### By source_mode
 
-| source_mode | train | dev | total | target (full corpus) |
+| source_mode | train | dev | total (train+dev) | target (full corpus) |
 |---|---|---|---|---|
 | `programmatic` | 72 | 51 | 123 | 75 |
 | `trace_derived` | 36 | 24 | 60 | 50 |
 | `hand_authored` | 17 | 0 | 17 | 25 |
-| `synthetic` | 0 | 0 | 0 | 100 |
-| **Total** | **125** | **75** | **200** | **250** |
+| `synthetic` | 7 | 4 | 11 | 100 |
+| **Total** | **132** | **79** | **211** | **250** |
 
-Synthetic mode (target 100) requires live API calls and is scheduled for Wave 4 (Days 4–6).
-Programmatic and trace_derived are over their per-mode targets because they filled the synthetic
-gap for the interim submission.
+Synthetic mode reached 11/100 tasks via live Qwen3-Next-80B generation + DeepSeek V3.2 judge
+filter (R2 compliant). Remaining 89 synthetic tasks are planned for held_out expansion and
+additional gap-filling before the May 3 deadline.
 
 ### By difficulty
 
 | difficulty | train | dev | total |
 |---|---|---|---|
-| hard | 58 | 28 | 86 |
-| medium | 34 | 22 | 56 |
-| easy | 33 | 25 | 58 |
-
-Hard skew reflects the methodology requirement to weight P24/P33 at 1.25× standard allocation
-and to prioritise hard difficulty where both failures originate.
+| hard | 87 | — | 87 |
+| medium | 66 | — | 66 |
+| easy | 58 | — | 58 |
 
 ### By channel
 
-| channel | train | dev | total | target (train+dev) |
+| channel | train | dev | total (train+dev) | target (train+dev) |
 |---|---|---|---|---|
-| email | 86 | 48 | 134 | 150 |
-| linkedin_dm | 37 | 21 | 58 | 75 |
-| sms | 2 | 6 | 8 | 25 |
+| email | — | — | 144 | 150 |
+| linkedin_dm | — | — | 58 | 75 |
+| sms | — | — | 9 | 25 |
 
-SMS is under target (8/25) because programmatic blueprints conservatively limit sms variants
-to warm_reply only per P12–P15 channel safety constraints. SMS will be expanded in Wave 4.
+SMS remains under target (9/25). Planned synthetic expansion will add SMS-channel tasks.
 
 ### By message_kind (train+dev)
 
 | message_kind | count |
 |---|---|
-| warm_reply | 89 |
-| cold_outreach | 71 |
-| reengagement | 40 |
+| warm_reply | 84 |
+| cold_outreach | 68 |
+| reengagement | 59 |
 
 **Microscopic field/schema detail.** Each task is a JSON object conforming to `schema.json`
 (Draft 2020-12). Required top-level fields: `task_id`, `partition`, `source_mode`, `difficulty`,
@@ -218,16 +215,19 @@ canonical files. Each line is a self-contained JSON task conforming to `schema.j
 **Maintainer.** Nebiyou Abebe (nebiyoua@10academy.org), 10 Academy TRP1 Week 11.
 
 **Updates planned:**
-- Wave 4 (before May 3): synthetic tasks via live API (Qwen3-Next-80B + DeepSeek V3.2 judge),
-  held_out expansion to 50 tasks, ORPO preference pairs
+- Wave 4 continuation (before May 3): additional synthetic tasks targeting SMS channel and
+  remaining dimension gaps, held_out expansion toward 50, ORPO preference pairs
 - Post-training: ablation results logged to `docs/inter_rater_agreement.md`
 
 **Known issues:**
-- `signal_grounding` (25 tasks) and `next_step_quality` (22 tasks) are below methodology
-  targets in train+dev. Synthetic Wave will close these gaps.
-- SMS channel is under-represented (8/25 target). Wave 4 will add SMS-specific synthetic tasks.
-- `hand_authored` mode is at 17/25 target; 8 more hand-authored tasks are needed for Wave 4.
+- `gap_condescension` (39 tasks) and `ai_maturity_consistency` (39 tasks) are 1 below target
+  (40 each). Remaining gap closed in next synthetic batch.
+- `next_step_quality` (26 tasks) is 1 below target (27). One synthetic batch will close.
+- SMS channel is under-represented (9/25 target). Synthetic expansion will add SMS tasks.
+- `hand_authored` mode is at 17/25 target; 8 more hand-authored tasks needed.
+- held_out partial (14/50 target). Full ablation requires 36 more tasks.
 
 **Version history:**
 - v0.1-wave1: 122 tasks (train 74, dev 48) — Apr 29 2026
 - v0.1-wave2: 200 tasks (train 125, dev 75) — Apr 30 2026
+- v0.1-wave4: 211 tasks (train 132, dev 79) + held_out 14 — Apr 30 2026

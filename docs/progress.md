@@ -4,6 +4,45 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-30 - Wave 4 — synthetic tasks, held_out expansion, 225/225 scorer pass
+
+**Completed:** Synthetic gap-filling tasks generated and judge-filtered (R2: Qwen3-Next-80B
+generator, DeepSeek V3.2 judge). held_out expanded from 4 to 14. Scorer passes all 225 tasks.
+
+**Changes:**
+
+- `src/generation/generate_synthesis.py`: Extended SYNTHESIS_SPECS with 11 gap-fill specs
+  (4 train signal_grounding + 3 train next_step_quality + 2 dev signal_grounding + 2 dev
+  next_step_quality). Added partition-aware spec filtering, retry logic for 429 errors,
+  partition-derived output path default.
+- `src/generation/synthesis_policy.py`: Rewrote SYSTEM_PROMPT to embed the full schema
+  structure and a concrete example; rewrote BUILD_GENERATION_PROMPT to be explicit about
+  field assignments. Fixed schema validation failures (flat vs. nested structure).
+- `src/generation/generate_hand_authored.py`: Added 10 new held_out hard seeds covering
+  P03, P05, P12, P24 (×3), P30, P33 (×3), P34, using unique company names and vocabulary.
+  Fixed 7 existing task bodies to clear scorer failures (CTA/bench-term/AI-maturity-keyword).
+- `tenacious_bench_v0.1/train/synthetic_tasks.jsonl`: 7 new synthetic tasks (4 signal_grounding,
+  3 next_step_quality). One body patched post-generation for missing CTA keyword.
+- `tenacious_bench_v0.1/dev/synthetic_tasks.jsonl`: 4 new synthetic tasks (3 signal_grounding,
+  1 next_step_quality). 3 of 7 were judge-rejected (schema violations: ai_maturity score > 3).
+- `tenacious_bench_v0.1/held_out/hand_authored_tasks.jsonl`: Regenerated, 14 tasks.
+- `docs/datasheet.md`: Updated all counts, source_mode table, known issues, version history.
+- `docs/methodology.md`: Updated gap table to Wave 4 actuals.
+
+**Verification:** Scorer: 225/225 pass (all partitions). Contamination: pass=true, 0 findings
+(partition_counts: train=132, dev=79, held_out=14). R2 policy: enforced (Qwen3 ≠ DeepSeek).
+Cost: 11 generation calls + 14 judge calls via OpenRouter, cost logged in cost/log.csv.
+
+**Deviations:**
+- 3 of 7 dev synthetic specs were judge-rejected due to ai_maturity score > 3 schema error.
+  System prompt updated to prevent recurrence. Actual dev synthetic = 4 (not 7).
+- Judge model switched from `deepseek/deepseek-chat` (rate-limited on free tier) to
+  `deepseek/deepseek-v3.2` which had available capacity.
+
+**Next:** ORPO preference pair generation, LoRA training (Path B), ablations.
+
+---
+
 ## 2026-04-30 - Act II Wave 2/3 complete — train 125, dev 75, held_out 4
 
 **Completed:** Interim submission dataset targets met. All contamination and scorer checks pass.

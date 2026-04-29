@@ -1,0 +1,14 @@
+[
+  {
+    "id": "dev-synthetic-002-synthetic-gap-condescension",
+    "reason": "Task dev-synthetic-002-synthetic-gap-condescension failed schema validation: 4 is greater than the maximum of 3"
+  },
+  {
+    "id": "dev-synthetic-003-synthetic-fixture-boundary",
+    "reason": "Task dev-synthetic-003-synthetic-fixture-boundary failed schema validation: 'ground_truth' is a required property; 'rubric' is a required property; 'scoring_config' is a required property; 'probe_id' is a required property; 'source_artifact' is a required property; 'style_guide_version' is a required property"
+  },
+  {
+    "id": "dev-synthetic-006-synthetic-next-step-calendar-blocked",
+    "reason": "Task dev-synthetic-006-synthetic-next-step-calendar-blocked failed schema validation: 4 is greater than the maximum of 3; 'max_subject_chars' is a required property"
+  }
+]

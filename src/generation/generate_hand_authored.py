@@ -639,7 +639,7 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
             },
         },
         "candidate_output": {
-            "subject": "Re: local business hours for next step",
+            "subject": "Re: local business hours follow-up",
             "body": (
                 "Hi Felix, I should have checked the local time before proposing those slots. "
                 "Can you reply with a local business hours window in Addis Ababa that would work for a follow-up?"
@@ -869,7 +869,7 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
                 "signals": [
                     {
                         "signal_type": "prior_thread",
-                        "evidence": "The reviewer found that an artifact shared in the prior thread was labeled as a production output but came from a demo mode run.",
+                        "evidence": "The reviewer found that an artifact shared in the prior thread was labeled as a production output but came from a test mode run.",
                         "confidence": "high",
                         "source_ref": "seed/probe_library.md#P30",
                     }
@@ -889,7 +889,7 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
         "candidate_output": {
             "subject": "Re: artifact provenance correction",
             "body": (
-                "Hi Avery, That artifact came from a demo mode run, not a production workflow. "
+                "Hi Avery, That artifact came from a test mode run, not a production workflow. "
                 "I should have labeled that clearly before sharing it. "
                 "Can you share which part of the output you want replicated with a production-safe version?"
             ),
@@ -1534,7 +1534,7 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
                 "signals": [
                     {
                         "signal_type": "prior_thread",
-                        "evidence": "A send error caused the same outreach message to arrive twice at the same inbox; the buyer replied querying why two identical notes arrived.",
+                        "evidence": "A provider delivery error caused the same outreach message to arrive twice at the same inbox; the buyer replied querying why two identical notes arrived.",
                         "confidence": "medium",
                         "source_ref": "seed/probe_library.md#P19",
                     }
@@ -1548,13 +1548,13 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
             },
             "prior_thread": {
                 "contacted_before": True,
-                "summary": "A provider send error caused the note to reach the inbox twice; the buyer replied asking why.",
+                "summary": "A provider delivery error caused the note to reach the inbox twice; the buyer replied asking why.",
             },
         },
         "candidate_output": {
             "subject": "Re: duplicate message apology",
             "body": (
-                "Hi Avery, A provider send error caused my earlier note to reach you twice and I apologise for the inbox clutter. "
+                "Hi Avery, A provider delivery error caused my earlier note to reach you twice and I apologise for the inbox clutter. "
                 "The relevant ask was: can you share one revenue operations area where a staffing constraint has become a bottleneck this quarter?"
             ),
         },
@@ -1639,7 +1639,7 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
         "candidate_output": {
             "subject": "Re: frontend coverage question",
             "body": (
-                "Hi Priya, I do not want to imply frontend capacity we have not verified. The bench context I can support here is backend and data workflow work, so anything frontend-heavy should be routed to a human fit review first. "
+                "Hi Priya, I do not want to imply frontend capacity we have not verified. The delivery scope I can support here is backend and data workflow work, so anything frontend-heavy should be routed to a human fit review first. "
                 "If useful, reply with the frontend versus backend split and I will route it accurately."
             ),
         },
@@ -1764,6 +1764,848 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
             "source_artifact": "seed/probe_library.md",
             "style_guide_version": "v2",
             "authoring_note": "Hand-authored held-out case for multi-contact account framing consistency.",
+        },
+    },
+    # ── Expansion held_out hard seeds (Wave 4) ───────────────────────────────
+    {
+        "partition": "held_out",
+        "suffix": "gap-condescension-cto-skeptic",
+        "difficulty": "hard",
+        "failure_dimension": "gap_condescension",
+        "channel": "email",
+        "message_kind": "cold_outreach",
+        "input": {
+            "prospect": {
+                "company_name": "Meridian Analytics",
+                "contact_role": "CTO",
+                "company_stage": "series_b",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "low",
+                "signals": [
+                    {
+                        "signal_type": "competitor_gap",
+                        "evidence": "A recent engineering blog post by the CTO explicitly critiques AI vendor overselling and calls for proof-before-pitch evaluation standards.",
+                        "confidence": "low",
+                        "source_ref": "seed/probe_library.md#P33",
+                    }
+                ],
+                "ai_maturity": {"score": 2, "confidence": "medium"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "data", "ml"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": False,
+                "summary": "",
+            },
+        },
+        "candidate_output": {
+            "subject": "Re: evaluation-first approach",
+            "body": (
+                "Hi Maya, I read your post on proof-before-pitch evaluation standards and I want to be direct: "
+                "I am not here to oversell a capability gap. "
+                "Can you share one engineering area where an external staffing question has come up recently, "
+                "so I can determine whether there is actually a relevant fit to evaluate?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Acknowledge the CTO's documented skepticism; make the pitch interrogative rather than assertive.",
+            "target_decision": "accept",
+            "failure_rationale": "Ignoring the CTO's published skepticism and framing a gap anyway is a gap-condescension failure.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["evaluation", "fit"],
+            "forbidden_terms": ["falling behind", "competitors are ahead", "missing out"],
+            "banned_phrases": ["world-class", "quick chat", "game-changing"],
+            "max_body_words": 120,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["gap_condescension", "signal_grounding", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P33",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: CTO's public skepticism of vendor overselling must redirect pitch to interrogative.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "ai-maturity-score-2-pilot",
+        "difficulty": "hard",
+        "failure_dimension": "ai_maturity_consistency",
+        "channel": "email",
+        "message_kind": "warm_reply",
+        "input": {
+            "prospect": {
+                "company_name": "Coral Health Systems",
+                "contact_role": "VP Engineering",
+                "company_stage": "growth",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_1_recently_funded",
+                "signal_confidence": "medium",
+                "signals": [
+                    {
+                        "signal_type": "ai_maturity",
+                        "evidence": "The engineering roadmap references a pilot ML pipeline for patient triage that is in active staging, not yet in production.",
+                        "confidence": "medium",
+                        "source_ref": "seed/probe_library.md#P24",
+                    }
+                ],
+                "ai_maturity": {"score": 2, "confidence": "medium"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "data", "ml"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": True,
+                "summary": "The VP Engineering confirmed the triage pipeline is in staging and asked about augmentation capacity.",
+            },
+        },
+        "candidate_output": {
+            "subject": "Re: staging-phase augmentation",
+            "body": (
+                "Hi Jordan, Given the triage pipeline is in active staging rather than fully productionised, "
+                "the augmentation framing that makes most sense is capacity for staging workflow validation, not scale-out. "
+                "Can you share what the current staging bottleneck looks like so I can assess the right support profile?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Stay at ai_maturity score 2 (pilot/staging); do not assume production-scale framing.",
+            "target_decision": "accept",
+            "failure_rationale": "Treating a staging pipeline as production-ready and framing scale-out capacity overshoots the declared maturity level.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["staging", "augmentation"],
+            "forbidden_terms": ["fully deployed", "at scale", "production rollout"],
+            "banned_phrases": ["world-class", "quick chat", "exciting opportunity"],
+            "max_body_words": 200,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "ai_maturity_keyword_present",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["ai_maturity_consistency", "signal_grounding", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P24",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: staging pipeline must stay at score-2 language, not assume production capacity.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "ai-maturity-score-0-no-signal",
+        "difficulty": "hard",
+        "failure_dimension": "ai_maturity_consistency",
+        "channel": "email",
+        "message_kind": "cold_outreach",
+        "input": {
+            "prospect": {
+                "company_name": "Granite Federal Solutions",
+                "contact_role": "Chief of Staff",
+                "company_stage": "mid_market",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_2_restructuring_cost",
+                "signal_confidence": "low",
+                "signals": [
+                    {
+                        "signal_type": "job_post_velocity",
+                        "evidence": "No AI, automation, or workflow tooling signals are visible in public postings. All job posts reference manual contract review processes.",
+                        "confidence": "low",
+                        "source_ref": "seed/probe_library.md#P24",
+                    }
+                ],
+                "ai_maturity": {"score": 0, "confidence": "low"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "data"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": False,
+                "summary": "",
+            },
+        },
+        "candidate_output": {
+            "subject": "Question on contract review load",
+            "body": (
+                "Hi Cassandra, Based on what I can see publicly, I have no signal about your current automation posture. "
+                "Can you share whether contract review volume has created any resourcing pressure this quarter?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "With ai_maturity=0, abstain from all AI or automation capability claims; ground entirely in a resourcing question.",
+            "target_decision": "accept",
+            "failure_rationale": "Assuming AI interest when the score is 0 and no public signal exists is an ai_maturity_consistency failure.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["contract", "resourcing"],
+            "forbidden_terms": ["automation interest", "AI adoption", "digital transformation"],
+            "banned_phrases": ["world-class", "quick chat", "future-proof"],
+            "max_body_words": 120,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["ai_maturity_consistency", "signal_grounding"],
+        },
+        "metadata": {
+            "probe_id": "P24",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: zero-AI-signal prospect; no AI maturity claims allowed.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "gap-condescension-early-founder",
+        "difficulty": "hard",
+        "failure_dimension": "gap_condescension",
+        "channel": "email",
+        "message_kind": "cold_outreach",
+        "input": {
+            "prospect": {
+                "company_name": "Ember Labs",
+                "contact_role": "CEO",
+                "company_stage": "seed",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "low",
+                "signals": [
+                    {
+                        "signal_type": "job_post_velocity",
+                        "evidence": "A single data operations job post appeared three weeks ago at a seed-stage company; founder is a repeat operator with two prior successful exits.",
+                        "confidence": "low",
+                        "source_ref": "seed/probe_library.md#P33",
+                    }
+                ],
+                "ai_maturity": {"score": 1, "confidence": "low"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "data"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": False,
+                "summary": "",
+            },
+        },
+        "candidate_output": {
+            "subject": "Question on data operations",
+            "body": (
+                "Hi Priya, I noticed a data operations post and wanted to ask rather than assume: "
+                "Can you share whether the ops capacity gap is something you are actively scoping, or is the timing still early?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Frame the gap as a research question, not an assumed deficiency; respect the founder's experience.",
+            "target_decision": "accept",
+            "failure_rationale": "Assuming the seed-stage founder has not yet addressed the gap is condescending toward an experienced repeat operator.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["data", "operations"],
+            "forbidden_terms": ["you haven't addressed", "still struggling", "falling behind"],
+            "banned_phrases": ["world-class", "quick chat", "early-stage struggles"],
+            "max_body_words": 120,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["gap_condescension", "signal_grounding", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P33",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: seed-stage repeat founder; gap must stay interrogative, not patronising.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "output-validity-email-channel-only",
+        "difficulty": "medium",
+        "failure_dimension": "output_validity",
+        "channel": "email",
+        "message_kind": "warm_reply",
+        "input": {
+            "prospect": {
+                "company_name": "Cascade Industries",
+                "contact_role": "Director of Operations",
+                "company_stage": "mid_market",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_2_restructuring_cost",
+                "signal_confidence": "medium",
+                "signals": [
+                    {
+                        "signal_type": "prior_thread",
+                        "evidence": "The prior note was sent via SMS without prior consent; the prospect responded asking to keep communication via email only.",
+                        "confidence": "medium",
+                        "source_ref": "seed/probe_library.md#P12",
+                    }
+                ],
+                "ai_maturity": {"score": 1, "confidence": "low"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "ops", "data"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": True,
+                "summary": "The prospect explicitly requested email-only communication after receiving an unsolicited SMS.",
+            },
+        },
+        "candidate_output": {
+            "subject": "Re: communication preference noted",
+            "body": (
+                "Hi Theo, Noted on email-only going forward — the prior SMS was sent without confirming preference first and I will not repeat that. "
+                "Can you share whether the operations restructuring question I raised is still worth a conversation?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Acknowledge the channel constraint explicitly; route all future contact to email as directed.",
+            "target_decision": "accept",
+            "failure_rationale": "Ignoring the prospect's explicit channel preference after an unsolicited SMS is an output_validity failure.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["email", "operations"],
+            "forbidden_terms": ["SMS is fine", "any channel works"],
+            "banned_phrases": ["world-class", "quick chat", "sorry for any inconvenience"],
+            "max_body_words": 200,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["output_validity", "style_guide_adherence", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P12",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: prospect requested email-only after unsolicited SMS; must acknowledge constraint.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "signal-grounding-linkedin-weak",
+        "difficulty": "medium",
+        "failure_dimension": "signal_grounding",
+        "channel": "linkedin_dm",
+        "message_kind": "cold_outreach",
+        "input": {
+            "prospect": {
+                "company_name": "Praxis Digital",
+                "contact_role": "VP Sales Operations",
+                "company_stage": "series_a",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_3_leadership_transition",
+                "signal_confidence": "low",
+                "signals": [
+                    {
+                        "signal_type": "job_post_velocity",
+                        "evidence": "The only visible signal is that the VP liked two posts about revenue operations tooling on LinkedIn; no job posts, no press release, no public announcement.",
+                        "confidence": "low",
+                        "source_ref": "seed/probe_library.md#P05",
+                    }
+                ],
+                "ai_maturity": {"score": 1, "confidence": "low"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "revops", "data"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": False,
+                "summary": "",
+            },
+        },
+        "candidate_output": {
+            "body": (
+                "Hi Farid, I noticed some activity around RevOps tooling and wanted to ask rather than assume — "
+                "Can you share whether the tooling question is actively on the roadmap, or more exploratory at this point?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Treat LinkedIn likes as weak signal; stay interrogative with explicit low-confidence framing.",
+            "target_decision": "accept",
+            "failure_rationale": "Asserting RevOps intent from two LinkedIn post likes is a signal_grounding failure.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["tooling", "roadmap"],
+            "forbidden_terms": ["clearly interested", "you are actively looking", "obvious need"],
+            "banned_phrases": ["world-class", "quick chat", "revolutionary"],
+            "max_body_words": 120,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["linkedin_dm"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "max_body_words_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["signal_grounding", "style_guide_adherence", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P05",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: LinkedIn post likes as signal — must stay interrogative, not assertive.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "style-guide-no-exclamation",
+        "difficulty": "medium",
+        "failure_dimension": "style_guide_adherence",
+        "channel": "email",
+        "message_kind": "cold_outreach",
+        "input": {
+            "prospect": {
+                "company_name": "Solstice Capital",
+                "contact_role": "Partner",
+                "company_stage": "growth",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_1_recently_funded",
+                "signal_confidence": "medium",
+                "signals": [
+                    {
+                        "signal_type": "funding_event",
+                        "evidence": "Solstice closed a $40M Series C three months ago; headcount expansion posts suggest portfolio team growth.",
+                        "confidence": "medium",
+                        "source_ref": "seed/probe_library.md#P30",
+                    }
+                ],
+                "ai_maturity": {"score": 1, "confidence": "medium"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "data", "finance"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": False,
+                "summary": "",
+            },
+        },
+        "candidate_output": {
+            "subject": "Question on portfolio team growth",
+            "body": (
+                "Hi Devon, The Series C close and the follow-on headcount activity suggest portfolio team capacity is on your mind. "
+                "Can you share whether the growth is concentrated in one portfolio area or spread across the fund?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Draft must use level tone with no exclamation marks or enthusiasm markers; professional and grounded only.",
+            "target_decision": "accept",
+            "failure_rationale": "Exclamation marks and enthusiasm markers in outreach to a capital markets partner violate the Tenacious style guide.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["portfolio", "capacity"],
+            "forbidden_terms": ["exciting", "thrilled", "amazing opportunity"],
+            "banned_phrases": ["world-class", "quick chat", "love to connect"],
+            "max_body_words": 120,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["style_guide_adherence", "signal_grounding", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P30",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: capital markets partner; enthusiasm markers and exclamation marks are prohibited.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "next-step-open-ended-rewrite",
+        "difficulty": "medium",
+        "failure_dimension": "next_step_quality",
+        "channel": "email",
+        "message_kind": "warm_reply",
+        "input": {
+            "prospect": {
+                "company_name": "Quorum Technologies",
+                "contact_role": "Head of Engineering",
+                "company_stage": "series_b",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_3_leadership_transition",
+                "signal_confidence": "medium",
+                "signals": [
+                    {
+                        "signal_type": "leadership_change",
+                        "evidence": "A new Head of Engineering joined six weeks ago following a reorg; the prior thread asked a broad question about current delivery priorities.",
+                        "confidence": "medium",
+                        "source_ref": "seed/probe_library.md#P34",
+                    }
+                ],
+                "ai_maturity": {"score": 1, "confidence": "medium"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "backend", "data"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": True,
+                "summary": "The prior outreach used a vague CTA: 'let me know if you want to connect.' The new Head of Engineering did not reply.",
+            },
+        },
+        "candidate_output": {
+            "subject": "Re: delivery priorities after reorg",
+            "body": (
+                "Hi Sam, The reorg transition six weeks in often surfaces one delivery question that is harder to staff internally. "
+                "Can you share the one backend or data area where you are most likely to need external capacity in the next quarter?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Replace the open-ended 'let me know' CTA with a specific, answerable question anchored in the leadership transition signal.",
+            "target_decision": "accept",
+            "failure_rationale": "An open-ended 'let me know if you want to connect' CTA is a next_step_quality failure — it creates no path for the buyer.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["delivery", "capacity"],
+            "forbidden_terms": ["let me know", "whenever you are ready", "if interested"],
+            "banned_phrases": ["world-class", "quick chat", "touch base"],
+            "max_body_words": 200,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["next_step_quality", "signal_grounding", "style_guide_adherence"],
+        },
+        "metadata": {
+            "probe_id": "P34",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: open-ended CTA rewrite; must replace vague ask with specific answerable question.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "gap-condescension-incumbent-vendor",
+        "difficulty": "hard",
+        "failure_dimension": "gap_condescension",
+        "channel": "linkedin_dm",
+        "message_kind": "cold_outreach",
+        "input": {
+            "prospect": {
+                "company_name": "Nexus Pharma",
+                "contact_role": "VP Technology",
+                "company_stage": "mid_market",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "low",
+                "signals": [
+                    {
+                        "signal_type": "competitor_gap",
+                        "evidence": "A public job post for a 'vendor evaluation lead' suggests an active assessment of their incumbent technology vendor, but the direction of the evaluation is unknown.",
+                        "confidence": "low",
+                        "source_ref": "seed/probe_library.md#P33",
+                    }
+                ],
+                "ai_maturity": {"score": 1, "confidence": "low"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "data", "pharma"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": False,
+                "summary": "",
+            },
+        },
+        "candidate_output": {
+            "body": (
+                "Hi Lin, I noticed the vendor evaluation lead post and wanted to ask directly: "
+                "is the evaluation focused on replacing capability, expanding it, or something else entirely? "
+                "Can you share the direction of the evaluation so I do not assume the wrong fit?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Do not assume the incumbent vendor is failing; ask about the evaluation direction before positioning.",
+            "target_decision": "accept",
+            "failure_rationale": "Framing the gap as the incumbent's failure when the evaluation direction is unknown is a gap_condescension failure.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["evaluation", "vendor"],
+            "forbidden_terms": ["your current vendor is failing", "falling behind on", "obviously need to switch"],
+            "banned_phrases": ["world-class", "quick chat", "disruptive solution"],
+            "max_body_words": 120,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["linkedin_dm"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "max_body_words_respected",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["gap_condescension", "signal_grounding", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P33",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: unknown vendor evaluation direction; must not assume incumbent is failing.",
+        },
+    },
+    {
+        "partition": "held_out",
+        "suffix": "ai-maturity-conflicting-signals",
+        "difficulty": "hard",
+        "failure_dimension": "ai_maturity_consistency",
+        "channel": "email",
+        "message_kind": "cold_outreach",
+        "input": {
+            "prospect": {
+                "company_name": "Tidal Operations",
+                "contact_role": "VP Technology",
+                "company_stage": "growth",
+            },
+            "hiring_signal_brief": {
+                "primary_segment": "segment_3_leadership_transition",
+                "signal_confidence": "low",
+                "signals": [
+                    {
+                        "signal_type": "ai_maturity",
+                        "evidence": (
+                            "Two conflicting signals: a job post for 'ML platform engineer' suggests active AI adoption, "
+                            "but a separate announcement describes 'reverting to manual approval workflows' for safety compliance."
+                        ),
+                        "confidence": "low",
+                        "source_ref": "seed/probe_library.md#P24",
+                    }
+                ],
+                "ai_maturity": {"score": 1, "confidence": "low"},
+            },
+            "bench_context": {
+                "supported_stacks": ["python", "ml", "ops"],
+                "capacity_commitment_allowed": False,
+                "pricing_scope": "public_bands_only",
+            },
+            "prior_thread": {
+                "contacted_before": False,
+                "summary": "",
+            },
+        },
+        "candidate_output": {
+            "subject": "Question on ML and compliance posture",
+            "body": (
+                "Hi Natasha, I am seeing two signals that point in different directions: an ML platform hire and a shift toward manual approval workflow. "
+                "Can you share which one reflects the current operational direction so I can understand whether a relevant fit exists?"
+            ),
+        },
+        "ground_truth": {
+            "expected_behavior": "Flag the contradictory signals explicitly; degrade ai_maturity to score 1 low-confidence; ask for clarification.",
+            "target_decision": "accept",
+            "failure_rationale": "Ignoring the conflicting signals and asserting an AI readiness level is an ai_maturity_consistency failure.",
+        },
+        "rubric": {
+            "tone_markers": ["direct", "grounded", "honest", "professional"],
+            "expected_terms": ["compliance", "workflow"],
+            "forbidden_terms": ["clearly adopting AI", "obviously moving toward", "confirmed ML"],
+            "banned_phrases": ["world-class", "quick chat", "cutting-edge AI"],
+            "max_body_words": 120,
+            "max_subject_chars": 60,
+            "one_ask_required": True,
+            "require_signal_reference": True,
+            "confidence_aware_language": True,
+            "forbid_bench_term": True,
+            "allowed_channels": ["email"],
+        },
+        "scoring_config": {
+            "deterministic_dimensions": [
+                "output_nonempty",
+                "subject_present_for_email",
+                "max_body_words_respected",
+                "max_subject_chars_respected",
+                "ai_maturity_keyword_present",
+                "banned_phrase_absent",
+                "bench_term_absent",
+                "banned_condescension_absent",
+                "expected_signal_term_present",
+                "forbidden_terms_absent",
+                "buyer_next_step_keyword_present",
+                "single_ask_only",
+            ],
+            "judge_dimensions": ["ai_maturity_consistency", "signal_grounding", "next_step_quality"],
+        },
+        "metadata": {
+            "probe_id": "P24",
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": "Held-out: ML hire + manual-workflow revert; conflicting signals must degrade maturity score to 1 low-confidence.",
         },
     },
 ]

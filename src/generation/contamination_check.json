@@ -1,9 +1,9 @@
 {
   "dataset_root": "D:\\TRP-1\\week-11\\Sales Eval Bench\\tenacious_bench_v0.1",
   "partition_counts": {
-    "train": 125,
-    "dev": 75,
-    "held_out": 4
+    "train": 132,
+    "dev": 79,
+    "held_out": 14
   },
   "held_out_status": "checked",
   "seed_held_out_trace_count": 17,

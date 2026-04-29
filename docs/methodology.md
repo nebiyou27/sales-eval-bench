@@ -272,18 +272,19 @@ datasheet and public artifacts.
 5. **trace_derived**: no task may cite a `source_trace_id` found in `seed/held_out_traces.jsonl`
    (enforced by `assert_no_held_out_leakage`).
 
-### Current vs. target gap (as of Apr 30 2026)
+### Current vs. target gap (as of Apr 30 2026, Wave 4)
 
-| partition | current | target | gap |
+| partition | current | original target | gap |
 |---|---|---|---|
-| train | 125 | 125 | 0 |
-| dev | 75 | 75 | 0 |
-| held_out | 4 (partial) | 50 | −46 |
-| **total (train + dev)** | **200** | **200** | **0** |
+| train | 132 | 125 | +7 |
+| dev | 79 | 75 | +4 |
+| held_out | 14 (partial) | 50 | −36 |
+| **total (train + dev)** | **211** | **200** | **+11** |
 
-Train and dev targets are met. held_out expansion to 50 is planned for Wave 4 (before May 3).
-Synthetic mode (target 100 tasks) requires live API and is deferred to Wave 4; programmatic
-and trace_derived filled the gap for the interim submission.
+Train and dev are above their original targets due to Wave 4 synthetic generation (11 tasks
+added). held_out expanded from 4 to 14 hand_authored tasks; 36 more needed for full ablation.
+Synthetic mode reached 11/100 tasks (Qwen3-Next-80B generator, DeepSeek V3.2 judge, R2
+compliant). Remaining synthetic tasks scheduled for continued Wave 4 generation.
 
 ---
 
