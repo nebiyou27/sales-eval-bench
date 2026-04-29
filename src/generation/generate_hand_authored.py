@@ -143,7 +143,7 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
             "subject": "Question on workflow pressure at Harbor Grid",
             "body": (
                 "Hi Elena, I cannot tell from the public record whether there is a real workflow gap, so I would rather not pretend there is one. "
-                "If this is relevant internally, what part of the handoff is hardest to staff today?"
+                "If this is relevant internally, can you share what part of the handoff is hardest to staff today?"
             ),
         },
         "ground_truth": {

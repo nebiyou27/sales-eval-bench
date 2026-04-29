@@ -1,8 +1,8 @@
 {
   "dataset_root": "D:\\TRP-1\\week-11\\Sales Eval Bench\\tenacious_bench_v0.1",
   "partition_counts": {
-    "train": 2,
-    "dev": 8,
+    "train": 74,
+    "dev": 48,
     "held_out": 2
   },
   "held_out_status": "checked",
@@ -11,7 +11,7 @@
   "lexical_cosine_proxy_threshold": 0.85,
   "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
   "embedding_model_resolved": "D:\\TRP-1\\week-11\\Sales Eval Bench\\models\\embeddings\\all-MiniLM-L6-v2",
-  "embedding_cosine_threshold": 0.85,
+  "embedding_cosine_threshold": 0.93,
   "embedding_check_status": "embedding_check_completed",
   "overlap_findings": [],
   "time_shift_findings": [],
