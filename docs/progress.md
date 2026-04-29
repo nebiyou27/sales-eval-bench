@@ -4,6 +4,44 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-30 - Act II Wave 2/3 complete — train 125, dev 75, held_out 4
+
+**Completed:** Interim submission dataset targets met. All contamination and scorer checks pass.
+
+**Changes:**
+
+- `src/generation/generate_programmatic.py`: Added 6 blueprints (7–12) covering
+  `signal_grounding` (hard, P26), `next_step_quality` (hard, P31), `gap_condescension`
+  (medium, P33), `ai_maturity_consistency` (easy, P25), `output_validity` (medium, P29),
+  and `style_guide_adherence` (easy, P30). Generated 36 new train + 27 new dev tasks (63
+  total).
+- `src/generation/generate_hand_authored.py`: Added 15 hard train seeds (Wave 3) and 2 new
+  held_out hard seeds. Three initially-added held_out specs were replaced after contamination
+  check flagged 8-gram overlaps with train tasks covering the same probe scenarios.
+- `tenacious_bench_v0.1/train/`: Regenerated — 125 tasks (72 programmatic, 36 trace_derived,
+  17 hand_authored).
+- `tenacious_bench_v0.1/dev/`: Regenerated — 75 tasks (51 programmatic, 24 trace_derived).
+- `tenacious_bench_v0.1/held_out/`: 4 tasks (gitignored, partial — 4/50 target).
+- `docs/datasheet.md`: Created. Gebru 7-section + Pushkarna layered detail with actual counts.
+- `docs/inter_rater_agreement.md`: Created. First-pass deterministic labels for 30-task subset
+  (all 30 pass). Second pass and inter-rater pending Wave 4.
+- `docs/methodology.md`: Updated current-vs-target gap table to reflect actual counts.
+- `tests/test_generate_hand_authored.py`: Updated count assertions (17 train, 4 held_out).
+
+**Verification:** Scoring evaluator 5/5 smoke cases pass. Contamination `pass=true`, 0
+findings. Unit tests 20/20 pass.
+
+**Deviations from plan:**
+- `synthetic` mode: 0/100 tasks — live API deferred to Wave 4 (Days 4–6).
+- `signal_grounding` and `next_step_quality` are below per-dimension targets (25 vs 31, 22 vs
+  27). Both gaps close in Wave 4 via synthetic tasks.
+- `held_out` is partial (4/50). Wave 4 will expand to 50 before ablations.
+
+**Next:** Wave 4 — synthetic task generation (Qwen3-Next-80B + DeepSeek V3.2 judge), held_out
+expansion to 50, ORPO preference pairs, LoRA training (Path B).
+
+---
+
 ## 2026-04-29 - Local MiniLM cache bootstrapped for true contamination embeddings
 
 **Completed:** The contamination pipeline now resolves a repo-local MiniLM snapshot and has been

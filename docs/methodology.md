@@ -272,18 +272,18 @@ datasheet and public artifacts.
 5. **trace_derived**: no task may cite a `source_trace_id` found in `seed/held_out_traces.jsonl`
    (enforced by `assert_no_held_out_leakage`).
 
-### Current vs. target gap (as of Apr 29 2026)
+### Current vs. target gap (as of Apr 30 2026)
 
 | partition | current | target | gap |
 |---|---|---|---|
-| train | 2 | 125 | −123 |
-| dev | 11 | 75 | −64 |
-| held_out | not yet sealed; scaffold count excluded | 50 | — |
-| **total (train + dev)** | **13** | **200** | **−187** |
+| train | 125 | 125 | 0 |
+| dev | 75 | 75 | 0 |
+| held_out | 4 (partial) | 50 | −46 |
+| **total (train + dev)** | **200** | **200** | **0** |
 
-All 237 remaining tasks must be generated and judge-filtered before Act II closes (Apr 30 21:00
-UTC). Programmatic and trace-derived modes are fastest; synthetic bulk generation should run in
-parallel once programmatic output validates.
+Train and dev targets are met. held_out expansion to 50 is planned for Wave 4 (before May 3).
+Synthetic mode (target 100 tasks) requires live API and is deferred to Wave 4; programmatic
+and trace_derived filled the gap for the interim submission.
 
 ---
 
