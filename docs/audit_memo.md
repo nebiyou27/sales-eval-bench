@@ -18,14 +18,14 @@ describe benchmark requirements that a generic retail task suite does not cover.
 
 The Week 10 artifacts show these are not hypothetical concerns. `seed/trace_log.jsonl` already
 contains at least five reward-0.0 examples queued for audit evidence:
-`a553180f-80d2-4d4b-9a1e-d525b1219cfd` / task 11,
-`89337dd1-bb36-41d7-8530-190df8734cc3` / task 34,
-`ef2ad255-479a-4b67-a96f-2522026e3aaf` / task 66,
-`0857ba6e-d8cb-4ec8-b024-3d5ddc298fc6` / task 76, and
-`19d13ac9-f495-4df4-b1c4-d042ca754933` / task 92. These traces are useful not because they
-represent one identical failure, but because they provide concrete failed agent behaviors that can
-be converted into Tenacious-Bench tasks and chosen/rejected preference pairs. Their detailed
-failure labels and candidate preference contrasts remain tracked in the Day 1 evidence inventory.
+`a553180f-80d2-4d4b-9a1e-d525b1219cfd` / task 11 is the concrete rejected example for
+competitor-gap condescension, `89337dd1-bb36-41d7-8530-190df8734cc3` / task 34 is the rejected
+example for AI-maturity consistency loss, `ef2ad255-479a-4b67-a96f-2522026e3aaf` / task 66 is a
+rejected unsupported-evidence example, `0857ba6e-d8cb-4ec8-b024-3d5ddc298fc6` / task 76 is the
+fixture/live-boundary honesty example, and `19d13ac9-f495-4df4-b1c4-d042ca754933` / task 92 is the
+thin-evidence restraint example. These traces matter because they provide concrete failed agent
+behaviors that can be converted into Tenacious-Bench tasks and chosen/rejected preference pairs.
+Their detailed preference use remains tracked in the Day 1 evidence inventory.
 
 The measured rates in `seed/failure_taxonomy.md` make the main gap even clearer. P24 produced the
 highest observed incident rate: 43.3% on tau2 thinking-model runs, where hard AI-maturity tasks
