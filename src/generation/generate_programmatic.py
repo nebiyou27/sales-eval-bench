@@ -15,7 +15,13 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from src.generation.common import REPO_ROOT, validate_task, write_jsonl
+from src.generation.common import (
+    REPO_ROOT,
+    assert_no_held_out_leakage,
+    load_held_out_trace_ids,
+    validate_task,
+    write_jsonl,
+)
 
 
 PROGRAMMATIC_TEMPLATES: list[dict[str, Any]] = [
@@ -100,7 +106,7 @@ PROGRAMMATIC_TEMPLATES: list[dict[str, Any]] = [
             "probe_id": "P24",
             "source_artifact": "seed/failure_taxonomy.md",
             "style_guide_version": "v2",
-            "source_trace_ids": ["2ee84e7e-ebcb-4006-a066-1c9d373fc99f"],
+            "source_trace_ids": ["92995764-0b20-48cd-8121-0b4641a7858b"],
         },
     },
     {
@@ -370,6 +376,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def materialize_tasks(partition: str) -> list[dict[str, Any]]:
+    held_out_ids = load_held_out_trace_ids()
     tasks: list[dict[str, Any]] = []
     for index, template in enumerate(PROGRAMMATIC_TEMPLATES, start=1):
         task = json.loads(json.dumps(template))
@@ -378,6 +385,7 @@ def materialize_tasks(partition: str) -> list[dict[str, Any]]:
         task["partition"] = partition
         task["source_mode"] = "programmatic"
         validate_task(task)
+        assert_no_held_out_leakage(task, partition, held_out_ids)
         tasks.append(task)
     return tasks
 

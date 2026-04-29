@@ -21,7 +21,7 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from src.generation.common import REPO_ROOT, read_jsonl, validate_task
+from src.generation.common import REPO_ROOT, load_held_out_trace_ids, read_jsonl, validate_task
 
 
 def parse_args() -> argparse.Namespace:
@@ -133,14 +133,60 @@ def time_shift_findings(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return findings
 
 
+def source_trace_findings(
+    train_rows: list[dict[str, Any]],
+    dev_rows: list[dict[str, Any]],
+    held_out_rows: list[dict[str, Any]],
+    seed_held_out_ids: set[str],
+) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+
+    def cited(task: dict[str, Any]) -> set[str]:
+        return set(task.get("metadata", {}).get("source_trace_ids", []) or [])
+
+    for partition_name, rows in (("train", train_rows), ("dev", dev_rows)):
+        for row in rows:
+            leaked = cited(row) & seed_held_out_ids
+            if leaked:
+                findings.append(
+                    {
+                        "task_id": row.get("task_id", ""),
+                        "partition": partition_name,
+                        "reason": "cites a seed held-out trace id",
+                        "leaked_trace_ids": sorted(leaked),
+                    }
+                )
+
+    held_out_cited = {tid for row in held_out_rows for tid in cited(row)}
+    for partition_name, rows in (("train", train_rows), ("dev", dev_rows)):
+        for row in rows:
+            overlap = cited(row) & held_out_cited
+            if overlap:
+                findings.append(
+                    {
+                        "task_id": row.get("task_id", ""),
+                        "partition": partition_name,
+                        "reason": "shares source_trace_ids with a held-out task",
+                        "leaked_trace_ids": sorted(overlap),
+                    }
+                )
+    return findings
+
+
 def build_report(dataset_root: Path) -> dict[str, Any]:
     train_rows = partition_rows(dataset_root, "train")
     dev_rows = partition_rows(dataset_root, "dev")
     held_out_rows = partition_rows(dataset_root, "held_out")
     overlap_findings = compare_partitions(held_out_rows, train_rows + dev_rows)
     provenance_findings = time_shift_findings(train_rows + dev_rows + held_out_rows)
+    seed_held_out_ids = load_held_out_trace_ids()
+    trace_findings = source_trace_findings(train_rows, dev_rows, held_out_rows, seed_held_out_ids)
     held_out_status = "pending_no_held_out_data" if not held_out_rows else "checked"
-    contamination_pass = None if not held_out_rows else (not overlap_findings and not provenance_findings)
+    structural_clean = not trace_findings
+    if not held_out_rows:
+        contamination_pass = None if structural_clean else False
+    else:
+        contamination_pass = structural_clean and not overlap_findings and not provenance_findings
     report = {
         "dataset_root": str(dataset_root),
         "partition_counts": {
@@ -149,11 +195,13 @@ def build_report(dataset_root: Path) -> dict[str, Any]:
             "held_out": len(held_out_rows),
         },
         "held_out_status": held_out_status,
+        "seed_held_out_trace_count": len(seed_held_out_ids),
         "n_gram_threshold": 8,
         "lexical_cosine_proxy_threshold": 0.85,
         "embedding_check_status": "proxy_only_pending_embedding_model",
         "overlap_findings": overlap_findings,
         "time_shift_findings": provenance_findings,
+        "source_trace_findings": trace_findings,
         "pass": contamination_pass,
     }
     return report

@@ -49,3 +49,26 @@ def write_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
 
 def prompt_manifest_path(output_path: Path) -> Path:
     return output_path.with_name(output_path.stem + "_prompt_manifest.jsonl")
+
+
+HELD_OUT_TRACES_PATH = REPO_ROOT / "seed" / "held_out_traces.jsonl"
+
+
+def load_held_out_trace_ids(path: Path = HELD_OUT_TRACES_PATH) -> set[str]:
+    return {row["simulation_id"] for row in read_jsonl(path) if "simulation_id" in row}
+
+
+def assert_no_held_out_leakage(
+    task: dict[str, Any],
+    partition: str,
+    held_out_ids: set[str],
+) -> None:
+    if partition == "held_out":
+        return
+    cited = set(task.get("metadata", {}).get("source_trace_ids", []) or [])
+    leaked = cited & held_out_ids
+    if leaked:
+        raise ValueError(
+            f"Task {task.get('task_id', '<unknown>')} in partition '{partition}' "
+            f"cites held-out trace(s): {sorted(leaked)}"
+        )

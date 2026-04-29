@@ -4,6 +4,33 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-29 - Trace-derived task generation added
+
+**Completed:** The third Week 11 authoring mode is now runnable under `src/generation/`.
+
+**Changes:**
+
+- Added `generate_trace_derived.py` with an explicit audited mapping from Week 10 failed trace IDs
+  to schema-valid Tenacious-Bench tasks.
+- Enforced held-out protection in code by blocking any trace ID found in `seed/held_out_traces.jsonl`
+  from entering `train` or `dev`.
+- Preserved provenance metadata including `source_trace_ids`, original task IDs, trace reward, and
+  a derivation note that makes the reconstruction boundary explicit.
+- Updated `README.md` run order to include the new trace-derived generation path.
+
+**Verification:** `python src/generation/generate_trace_derived.py` writes
+`tenacious_bench_v0.1/dev/trace_derived_tasks.jsonl` with schema-valid tasks and audited source
+trace IDs from `seed/trace_log.jsonl`.
+
+**Scope note:** The runnable authoring modes now cover 3 of the 4 Week 11 paths: trace-derived,
+programmatic, and synthesis scaffold. Hand-authored adversarial tasks and live judge-filtering are
+still pending.
+
+**Next:** Add judge-filter logic and committed prompts for synthesis, then start filling
+`train/` and `held_out/` with partition-safe tasks.
+
+---
+
 ## 2026-04-29 - Dataset authoring scaffolds added
 
 **Completed:** First-pass generation scaffolds now exist under `src/generation/`.

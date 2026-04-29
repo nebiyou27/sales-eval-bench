@@ -29,6 +29,7 @@ cp .env.example .env
 python src/scoring/scoring_evaluator.py
 
 # Author dataset (Days 2-3)
+python src/generation/generate_trace_derived.py
 python src/generation/generate_programmatic.py
 python src/generation/generate_synthesis.py
 
