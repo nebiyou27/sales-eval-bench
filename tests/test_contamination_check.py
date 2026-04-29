@@ -4,7 +4,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 from src.generation.common import write_jsonl
-from src.generation.contamination_check import build_report
+from src.generation.contamination_check import (
+    DEFAULT_EMBEDDING_MODEL,
+    build_report,
+)
 
 
 def make_task(task_id: str, partition: str, source_mode: str = "hand_authored") -> dict:
@@ -79,6 +82,7 @@ class ContaminationCheckTests(unittest.TestCase):
             report = build_report(dataset_root, "missing-local-model")
         self.assertTrue(report["embedding_check_status"].startswith("embedding_check_unavailable:"))
         self.assertEqual(report["embedding_model"], "missing-local-model")
+        self.assertEqual(report["embedding_model_resolved"], "missing-local-model")
 
     def test_embedding_findings_use_real_embedding_scores_when_available(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -93,6 +97,31 @@ class ContaminationCheckTests(unittest.TestCase):
         self.assertEqual(report["embedding_check_status"], "embedding_check_completed")
         self.assertEqual(len(report["overlap_findings"]), 1)
         self.assertIn("embedding_cosine", report["overlap_findings"][0])
+
+    def test_default_embedding_model_prefers_repo_local_snapshot_when_available(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dataset_root = Path(temp_dir)
+            local_model_dir = dataset_root / "models" / "embeddings" / "all-MiniLM-L6-v2"
+            local_model_dir.mkdir(parents=True)
+            write_jsonl(dataset_root / "train" / "train_tasks.jsonl", [make_task("train-001", "train")])
+            write_jsonl(dataset_root / "held_out" / "held_tasks.jsonl", [make_task("held-001", "held_out")])
+            captured_models: list[str] = []
+
+            def fake_encode_texts(texts: list[str], model_name_or_path: str) -> list[list[float]]:
+                captured_models.append(model_name_or_path)
+                return [[1.0, 0.0], [0.99, 0.01]]
+
+            with patch("src.generation.contamination_check.DEFAULT_LOCAL_EMBEDDING_DIR", local_model_dir):
+                with patch(
+                    "src.generation.contamination_check.encode_texts",
+                    side_effect=fake_encode_texts,
+                ):
+                    report = build_report(dataset_root, DEFAULT_EMBEDDING_MODEL)
+
+        self.assertEqual(report["embedding_check_status"], "embedding_check_completed")
+        self.assertEqual(report["embedding_model"], DEFAULT_EMBEDDING_MODEL)
+        self.assertEqual(report["embedding_model_resolved"], str(local_model_dir))
+        self.assertEqual(captured_models, [str(local_model_dir)])
 
 
 if __name__ == "__main__":

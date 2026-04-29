@@ -29,6 +29,7 @@ from src.generation.common import REPO_ROOT, load_held_out_trace_ids, read_jsonl
 
 
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_LOCAL_EMBEDDING_DIR = REPO_ROOT / "models" / "embeddings" / "all-MiniLM-L6-v2"
 
 
 def parse_args() -> argparse.Namespace:
@@ -51,6 +52,15 @@ def parse_args() -> argparse.Namespace:
         help="Local embedding model name or path for semantic contamination checks.",
     )
     return parser.parse_args()
+
+
+def resolve_embedding_model(model_name_or_path: str) -> str:
+    candidate_path = Path(model_name_or_path)
+    if candidate_path.exists():
+        return str(candidate_path)
+    if model_name_or_path == DEFAULT_EMBEDDING_MODEL and DEFAULT_LOCAL_EMBEDDING_DIR.exists():
+        return str(DEFAULT_LOCAL_EMBEDDING_DIR)
+    return model_name_or_path
 
 
 def partition_rows(dataset_root: Path, partition: str) -> list[dict[str, Any]]:
@@ -239,8 +249,9 @@ def embedding_vectors_for_rows(
     if not rows:
         return {}, "embedding_check_skipped_no_rows"
     texts = [normalized_text(row) for row in rows]
+    resolved_model = resolve_embedding_model(model_name_or_path)
     try:
-        vectors = encode_texts(texts, model_name_or_path)
+        vectors = encode_texts(texts, resolved_model)
     except Exception as exc:
         return None, f"embedding_check_unavailable:{type(exc).__name__}"
     return {row.get("task_id", ""): vector for row, vector in zip(rows, vectors)}, "embedding_check_completed"
@@ -274,6 +285,7 @@ def build_report(dataset_root: Path, embedding_model: str) -> dict[str, Any]:
         "n_gram_threshold": 8,
         "lexical_cosine_proxy_threshold": 0.85,
         "embedding_model": embedding_model,
+        "embedding_model_resolved": resolve_embedding_model(embedding_model),
         "embedding_cosine_threshold": 0.85,
         "embedding_check_status": embedding_status,
         "overlap_findings": overlap_findings,

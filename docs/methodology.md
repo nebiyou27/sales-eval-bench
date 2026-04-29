@@ -114,8 +114,11 @@ Three checks before any task enters the held-out partition:
    using `all-MiniLM-L6-v2`. Scores at or above 0.85 are treated as near-duplicate candidates,
    matching common RAG and eval decontamination practice; borderline cases are manually removed
    or rewritten before sealing. The current code attempts this pass through the local
-   `transformers` stack first and reports an explicit unavailable-model status if the embedding
-   weights are not present on disk.
+   `transformers` stack first, preferring the repo-local snapshot at
+   `models/embeddings/all-MiniLM-L6-v2/`. The bootstrap command is
+   `python src/generation/fetch_embedding_model.py`. If the required weights are still absent,
+   the report emits an explicit unavailable-model status instead of claiming semantic
+   decontamination succeeded.
 3. **Time-shift verification** - any task referencing public signal (layoffs, job posts, funding)
    must include a machine-checkable `retrieval_provenance` field with `url`, `retrieved_at`
    (ISO-8601 UTC), and `source_type`.

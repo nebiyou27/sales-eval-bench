@@ -43,13 +43,15 @@ python src/generation/generate_synthesis.py
 python src/generation/generate_synthesis.py --live --judge-model deepseek/deepseek-chat
 
 # Run contamination checks
+python src/generation/fetch_embedding_model.py
 python src/generation/contamination_check.py
 
 # Training (Day 5) - see docs/training/unsloth_smoke_test_plan.md
 ```
 
-`contamination_check.py` now attempts a real local MiniLM embedding pass first and reports an
-honest fallback status if the model weights are not available on disk.
+`contamination_check.py` now prefers a repo-local MiniLM snapshot at
+`models/embeddings/all-MiniLM-L6-v2/`. Use `src/generation/fetch_embedding_model.py` once to
+bootstrap that cache, then rerun contamination to get a true embedding-backed pass.
 
 ## Directory Index
 

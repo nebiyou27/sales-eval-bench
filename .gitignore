@@ -13,5 +13,6 @@ tenacious_bench_v0.1/held_out/
 outputs/
 *.jsonl.gz
 cost/log.csv
+models/
 Challenge_Documents/
 docs/plans/Day_Zero_Implementation_Plan.md

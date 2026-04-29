@@ -4,6 +4,31 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-29 - Local MiniLM cache bootstrapped for true contamination embeddings
+
+**Completed:** The contamination pipeline now resolves a repo-local MiniLM snapshot and has been
+verified with a true embedding-backed pass instead of the earlier honest fallback state.
+
+**Changes:**
+
+- Updated `src/generation/contamination_check.py` to prefer
+  `models/embeddings/all-MiniLM-L6-v2/` when the default embedding model is requested.
+- Added `src/generation/fetch_embedding_model.py` to bootstrap the local MiniLM cache into a
+  gitignored repo-local directory.
+- Added test coverage for resolved-model reporting and the repo-local snapshot preference path.
+- Updated repo docs so the local embedding bootstrap step is part of the normal contamination
+  workflow.
+
+**Verification:** `& .\.venv\Scripts\python.exe -m unittest tests.test_contamination_check` passes.
+`python src/generation/contamination_check.py` now reports
+`embedding_model_resolved=D:\TRP-1\week-11\Sales Eval Bench\models\embeddings\all-MiniLM-L6-v2`,
+`embedding_check_status=embedding_check_completed`, and `pass=true`.
+
+**Next:** Expand `train/`, `dev/`, and local `held_out/` counts now that semantic contamination is
+running on a real local embedding backend.
+
+---
+
 ## 2026-04-29 - Contamination check upgraded to real embeddings with honest fallback
 
 **Completed:** The contamination checker now attempts a real local embedding pass instead of
