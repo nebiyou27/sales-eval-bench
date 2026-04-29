@@ -4,6 +4,32 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-29 - Dataset authoring scaffolds added
+
+**Completed:** First-pass generation scaffolds now exist under `src/generation/`.
+
+**Changes:**
+
+- Added `generate_programmatic.py` with schema-validated Tenacious task templates.
+- Added `generate_synthesis.py` in offline prompt-manifest mode by default, with optional live
+  OpenRouter generation later.
+- Added `contamination_check.py` with honest scaffold status and machine-readable report output.
+- Added shared JSONL/schema helpers in `common.py`.
+- Expanded programmatic coverage to include P24, P29, P30, and P33, each with source trace IDs.
+
+**Verification:** `python src/generation/generate_programmatic.py` emits schema-valid tasks.
+`python src/generation/generate_synthesis.py` emits a prompt manifest without spending API budget.
+`python src/generation/contamination_check.py` writes a report and now distinguishes
+`pending_no_held_out_data` from a clean checked held-out partition.
+
+**Scope note:** This scaffold currently covers 2 of the 4 Week 11 authoring modes in runnable
+code: programmatic and synthesis. Trace-derived and hand-authored authoring are still pending.
+
+**Next:** Expand the task batch, add trace-derived task generation, and wire the live synthesis
+path to judge-filtering and cost logging.
+
+---
+
 ## 2026-04-29 - Python 3.11 environment repaired
 
 **Completed:** The Day Zero local-environment blocker is now closed with a fresh Python 3.11
@@ -68,10 +94,11 @@ Day Zero is cheap.
 criteria. `audit_memo.md` now exists as a Day 1 starter with the required probe and trace evidence.
 
 **Confirmed Day 1 work surface:** `schema.json`, `scoring/scoring_evaluator.py`, and
-`tenacious_bench_v0.1/dev/dummy_tasks.jsonl` are the schema/evaluator verification targets.
+`tenacious_bench_v0.1/smoke/dummy_tasks.jsonl` are the schema/evaluator verification targets.
 
-**Verification:** `python scoring/scoring_evaluator.py` passes. All three dummy tasks validate
-against `schema.json` and receive passing numeric deterministic scores.
+**Verification:** `python scoring/scoring_evaluator.py` passes. All three dummy tasks in
+`tenacious_bench_v0.1/smoke/dummy_tasks.jsonl` validate against `schema.json` and receive passing
+numeric deterministic scores.
 
 **Next:** Begin Day 1 Act I by writing the 600-word audit memo, then tighten schema/evaluator
 checks against the three dummy tasks.
@@ -108,7 +135,7 @@ ignored; `.env.example` contains only empty placeholders.
 `bitsandbytes` import successfully.
 
 **Evaluator/schema:** `schema.json` exists, `scoring/scoring_evaluator.py` returns numeric scores,
-and `tenacious_bench_v0.1/dev/dummy_tasks.jsonl` validates with three passing dummy tasks.
+and `tenacious_bench_v0.1/smoke/dummy_tasks.jsonl` validates with three passing dummy tasks.
 
 **Seed inventory:** `seed/day1_seed_inventory.md` maps Week 10 probes and traces to Day 1 audit
 work, including candidate chosen/rejected examples for Path B preference data.

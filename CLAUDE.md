@@ -79,9 +79,9 @@ Sales Eval Bench/
 ├── tenacious_bench_v0.1/        # Data only — code lives in src/
 │   ├── train/                   # 50% — LoRA training data
 │   ├── dev/                     # 30% — iteration and rubric calibration
-│   │   └── dummy_tasks.jsonl
 │   ├── held_out/                # 20% — sealed, gitignored
-│   └── smoke/                   # Smoke fixtures (dummy ORPO preferences, etc.)
+│   └── smoke/                   # Smoke fixtures (dummy tasks, dummy ORPO preferences, etc.)
+│       ├── dummy_tasks.jsonl
 │       └── dummy_orpo_preferences.jsonl
 │
 ├── src/                         # Code — pipeline modules

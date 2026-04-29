@@ -30,7 +30,7 @@ Acceptance criteria:
 Inputs:
 
 - `schema.json`
-- `tenacious_bench_v0.1/dev/dummy_tasks.jsonl`
+- `tenacious_bench_v0.1/smoke/dummy_tasks.jsonl`
 - `docs/memos/synthetic_data_best_practices_v0.md`
 
 Acceptance criteria:
@@ -46,7 +46,7 @@ Acceptance criteria:
 Inputs:
 
 - `src/scoring/scoring_evaluator.py`
-- `tenacious_bench_v0.1/dev/dummy_tasks.jsonl`
+- `tenacious_bench_v0.1/smoke/dummy_tasks.jsonl`
 
 Acceptance criteria:
 

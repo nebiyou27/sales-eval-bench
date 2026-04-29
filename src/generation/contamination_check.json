@@ -1,0 +1,15 @@
+{
+  "dataset_root": "D:\\TRP-1\\week-11\\Sales Eval Bench\\tenacious_bench_v0.1",
+  "partition_counts": {
+    "train": 0,
+    "dev": 4,
+    "held_out": 0
+  },
+  "held_out_status": "pending_no_held_out_data",
+  "n_gram_threshold": 8,
+  "lexical_cosine_proxy_threshold": 0.85,
+  "embedding_check_status": "proxy_only_pending_embedding_model",
+  "overlap_findings": [],
+  "time_shift_findings": [],
+  "pass": null
+}
