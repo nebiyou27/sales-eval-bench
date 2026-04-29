@@ -168,11 +168,31 @@ Qwen-generated bulk variants, but a DeepSeek-generated rewrite cannot be accepte
 DeepSeek-only judge pass.
 
 Week 10 `seed/trace_log.jsonl` preserves simulation IDs, task IDs, reward, timing, and cost, but
-it does not preserve the underlying model-family metadata. Because local evidence cannot recover the
-rejected-output family after the fact, ORPO-preference prep requires explicit `rejected_model`,
-`source_task_id`, and `source_partition` metadata on every record before the pair can enter train.
-Preference records use `output_partition` for the destination split and `source_partition` for the
-origin task split so the train-target semantics stay explicit.
+it does not preserve the underlying model-family metadata. For real preference examples, the
+project adopts a single-family relabeling policy rather than operator-annotated
+`rejected_model` backfills: any historical rejected output that lacks trustworthy family metadata
+must be re-run through one known rejected-output family before it can enter ORPO prep. The default
+family for this relabeling pass is `qwen3-next-80b`, used only as the rejected-output producer and
+never as the judge on the same pair. Manual operator annotation of unknown rejected-model lineage is
+disallowed for train/dev preference records because it is not auditable and can silently break the
+rotation guarantee.
+
+As a consequence, ORPO-preference prep requires explicit `rejected_model`, `source_task_id`, and
+`source_partition` metadata on every record before the pair can enter train. For reconstructed
+historical pairs, `rejected_model` must name the relabeling family that actually produced the
+rejected output, not a guessed original family. Preference records use `output_partition` for the
+destination split and `source_partition` for the origin task split so the train-target semantics
+stay explicit.
+
+Operational rule for Act II pre-volume work:
+
+1. Extract candidate prompts and chosen outputs from the accepted source task.
+2. Re-run the rejected side once through `qwen3-next-80b` under a pinned model/version string.
+3. Record that family in `metadata.rejected_model` and log the call in `cost/log.csv`.
+4. Reject the pair if the relabeled output cannot reproduce a materially similar failure mode.
+
+This policy trades some historical fidelity for provenance consistency, which is the safer choice
+for a small audited preference corpus.
 
 For the R4 audit trail, every synthesis, judge, calibration, training, smoke-test, and held-out
 evaluation call is logged to `cost/log.csv` with timestamp, role, model/version, input tokens,
@@ -186,6 +206,84 @@ and filtered before partition assignment. Bulk generation should start from prob
 trace-derived templates, preserve provenance in `metadata`, and pass deterministic checks before
 any model-family-rotated judge score is trusted. This keeps the benchmark focused on
 Tenacious-specific failures rather than generic sales-writing quality.
+
+---
+
+## Dataset Balancing Table
+
+Target corpus: **250 tasks** (train 125 / dev 75 / held_out 50).
+
+Decisions made before generation begins, not after.
+
+### Primary table — failure_dimension × difficulty
+
+The two measured incident-rate dimensions (P24, P33) are weighted at 1.25× the standard
+allocation and skewed toward hard difficulty, where both failures originate.
+
+| failure_dimension | easy | medium | hard | **total** | train | dev | held_out |
+|---|---|---|---|---|---|---|---|
+| `gap_condescension` (P33) | 10 | 22 | 18 | **50** | 25 | 15 | 10 |
+| `ai_maturity_consistency` (P24) | 8 | 20 | 22 | **50** | 25 | 15 | 10 |
+| `output_validity` | 16 | 16 | 8 | **40** | 20 | 12 | 8 |
+| `signal_grounding` | 14 | 16 | 8 | **38** | 19 | 12 | 7 |
+| `style_guide_adherence` | 14 | 16 | 8 | **38** | 19 | 11 | 8 |
+| `next_step_quality` | 10 | 16 | 8 | **34** | 17 | 10 | 7 |
+| **Total** | **72** | **106** | **72** | **250** | **125** | **75** | **50** |
+
+Weighting rationale: P24 and P33 are the two strongest measured Week 10 failure signals
+available before Act II scaling. P24 has the highest observed incident rate at 43.3% on tau2
+thinking-model tasks; P33 has the clearest business-risk rate at 15.6% on A/B signal-grounded
+outreach. The 1.25× uplift prioritizes measured risk while preserving coverage across the other
+Tenacious-specific dimensions.
+
+### Channel marginals
+
+| channel | target count | % | constraint |
+|---|---|---|---|
+| `email` | 150 | 60% | Unrestricted across message_kind |
+| `linkedin_dm` | 75 | 30% | Unrestricted across message_kind |
+| `sms` | 25 | 10% | `warm_reply` only, prospect consent must be confirmed (P12–P15 channel safety) |
+
+### Source mode marginals
+
+Challenge terminology mapping: `synthetic` = multi-LLM synthesis; `hand_authored` = hand-authored
+adversarial. Schema enum values are used throughout code; challenge terms are used in the
+datasheet and public artifacts.
+
+| source_mode | target count | % | primary use |
+|---|---|---|---|
+| `trace_derived` | 75 | 30% | Derived from `seed/trace_log.jsonl`; excludes held-out trace IDs |
+| `programmatic` | 75 | 30% | Deterministic parameter sweeps; no LLM call needed |
+| `synthetic` | 63 | 25% | Bulk variation via Qwen3-Next-80B; filtered by DeepSeek V3.2 judge |
+| `hand_authored` | 37 | 15% | Hard seeds from probe library; ≥15 must be hard difficulty |
+| **Total** | **250** | **100%** | |
+
+### Cross-tab rules
+
+1. **hard × hand_authored**: ≥15 of the 37 hand-authored tasks must be hard. Hard hand-authored
+   tasks are the most reliable source of challenging preference pairs for ORPO.
+2. **sms × hard**: ≤5 sms tasks may be hard. SMS volume is small and regulatory constraints
+   already reduce variation space.
+3. **sms × consent**: every sms task must record `input.prior_thread.contacted_before: true` and
+   include a consent confirmation in `input.prior_thread.summary`. The scoring evaluator checks
+   this field before accepting any sms task as valid.
+4. **synthetic × signal_grounding**: all synthetic tasks with `failure_dimension=signal_grounding`
+   require `metadata.retrieval_provenance` (schema `allOf` condition).
+5. **trace_derived**: no task may cite a `source_trace_id` found in `seed/held_out_traces.jsonl`
+   (enforced by `assert_no_held_out_leakage`).
+
+### Current vs. target gap (as of Apr 29 2026)
+
+| partition | current | target | gap |
+|---|---|---|---|
+| train | 2 | 125 | −123 |
+| dev | 11 | 75 | −64 |
+| held_out | not yet sealed; scaffold count excluded | 50 | — |
+| **total (train + dev)** | **13** | **200** | **−187** |
+
+All 237 remaining tasks must be generated and judge-filtered before Act II closes (Apr 30 21:00
+UTC). Programmatic and trace-derived modes are fastest; synthetic bulk generation should run in
+parallel once programmatic output validates.
 
 ---
 
