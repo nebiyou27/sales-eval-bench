@@ -76,3 +76,42 @@ bootstrap that cache, then rerun contamination to get a true embedding-backed pa
 - `docs/audit_memo.md` - what tau2-Bench misses for Tenacious-specific work
 - `docs/datasheet.md` - Gebru-style datasheet with layered corpus details
 - `docs/memos/` - synthesis decision memos for synthetic-data policy and judge rotation
+
+## Forward plan
+
+The current repo is strong enough for audit, scoring, and controlled synthesis work, but two
+follow-on steps matter most:
+
+1. Expand `held_out/` from 14 tasks toward the 50-task target so ablation claims are backed by a
+   larger sealed evaluation set.
+2. Convert the accepted benchmark rows into a richer ORPO preference corpus with explicit
+   chosen/rejected pairs, then run the first end-to-end Unsloth smoke training pass.
+
+The next quality upgrades are intentionally quantitative:
+
+- add more synthetic tasks in under-covered regions, especially `sms`, `next_step_quality`, and
+  `signal_grounding`,
+- report per-dimension acceptance and rejection counts for live synthesis,
+- log preference-prep drop rates and rotation-policy rejections,
+- expand held-out reporting with delta tables rather than only narrative summaries.
+
+## External references
+
+Project decisions in this repo are grounded in a small set of external references:
+
+- Gebru et al., "Datasheets for Datasets" - framing for [docs/datasheet.md](docs/datasheet.md)
+- Pushkarna et al. dataset documentation guidance - layered dataset documentation style used in
+  the datasheet
+- Hong, Lee, and Thorne, "ORPO: Monolithic Preference Optimization without Reference Model" -
+  training choice for Path B
+- Liu et al., "Best Practices and Lessons Learned on Synthetic Data" - basis for
+  [docs/memos/synthetic_data_best_practices_v0.md](docs/memos/synthetic_data_best_practices_v0.md)
+- the project memo on judge rotation and leakage control in
+  [docs/memos/judge_rotation_and_preference_leakage_v0.md](docs/memos/judge_rotation_and_preference_leakage_v0.md)
+
+For repo-local evidence and rationale, start with:
+
+- [docs/audit_memo.md](docs/audit_memo.md)
+- [docs/methodology.md](docs/methodology.md)
+- [docs/datasheet.md](docs/datasheet.md)
+- [docs/progress.md](docs/progress.md)
