@@ -17,11 +17,17 @@ from typing import Any
 
 DETERMINISTIC_CHECKS = (
     "output_nonempty",
+    "subject_present_for_email",
+    "max_body_words_respected",
+    "max_subject_chars_respected",
     "ai_maturity_keyword_present",
+    "banned_phrase_absent",
+    "bench_term_absent",
     "banned_condescension_absent",
     "expected_signal_term_present",
     "forbidden_terms_absent",
     "buyer_next_step_keyword_present",
+    "single_ask_only",
 )
 
 CTA_PATTERN = re.compile(
@@ -33,6 +39,7 @@ CONDESCENSION_PATTERN = re.compile(
     re.IGNORECASE,
 )
 AI_MATURITY_PATTERN = re.compile(r"\b(ai|automation|model|workflow|crm|sales)\b", re.IGNORECASE)
+BENCH_PATTERN = re.compile(r"\bbench\b", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -57,6 +64,12 @@ def candidate_text(candidate: Any) -> str:
     if isinstance(candidate, str):
         return candidate
     if isinstance(candidate, dict):
+        subject = candidate.get("subject")
+        body = candidate.get("body")
+        if isinstance(subject, str) or isinstance(body, str):
+            parts = [part for part in (subject, body) if isinstance(part, str) and part.strip()]
+            if parts:
+                return "\n".join(parts)
         for key in ("answer", "output", "response", "message"):
             value = candidate.get(key)
             if isinstance(value, str):
@@ -64,16 +77,57 @@ def candidate_text(candidate: Any) -> str:
     return json.dumps(candidate, sort_keys=True)
 
 
+def candidate_subject(candidate: Any) -> str:
+    if isinstance(candidate, dict):
+        subject = candidate.get("subject")
+        if isinstance(subject, str):
+            return subject
+    return ""
+
+
+def candidate_body(candidate: Any) -> str:
+    if isinstance(candidate, dict):
+        body = candidate.get("body")
+        if isinstance(body, str):
+            return body
+    return candidate_text(candidate)
+
+
 def score_candidate(task: dict[str, Any], candidate: Any) -> ScoreResult:
     text = candidate_text(candidate)
+    body = candidate_body(candidate)
+    subject = candidate_subject(candidate)
     lower_text = text.lower()
     rubric = task.get("rubric", task)
+    channel = task.get("channel", "")
     expected_terms = [str(term).lower() for term in rubric.get("expected_terms", [])]
     forbidden_terms = [str(term).lower() for term in rubric.get("forbidden_terms", [])]
+    banned_phrases = [str(term).lower() for term in rubric.get("banned_phrases", [])]
+    body_words = len(re.findall(r"\S+", body))
+    max_body_words = rubric.get("max_body_words")
+    max_subject_chars = rubric.get("max_subject_chars")
+    cta_sentences = [
+        sentence for sentence in re.split(r"(?<=[.!?])\s+", text) if CTA_PATTERN.search(sentence)
+    ]
 
     scores = {
         "output_nonempty": 1.0 if text.strip() else 0.0,
+        "subject_present_for_email": 1.0
+        if channel != "email" or subject.strip()
+        else 0.0,
+        "max_body_words_respected": 1.0
+        if not isinstance(max_body_words, int) or body_words <= max_body_words
+        else 0.0,
+        "max_subject_chars_respected": 1.0
+        if channel != "email"
+        or not isinstance(max_subject_chars, int)
+        or len(subject) <= max_subject_chars
+        else 0.0,
         "ai_maturity_keyword_present": 1.0 if AI_MATURITY_PATTERN.search(text) else 0.0,
+        "banned_phrase_absent": 0.0
+        if any(term in lower_text for term in banned_phrases)
+        else 1.0,
+        "bench_term_absent": 0.0 if BENCH_PATTERN.search(text) else 1.0,
         "banned_condescension_absent": 0.0 if CONDESCENSION_PATTERN.search(text) else 1.0,
         "expected_signal_term_present": 1.0
         if not expected_terms or any(term in lower_text for term in expected_terms)
@@ -82,35 +136,101 @@ def score_candidate(task: dict[str, Any], candidate: Any) -> ScoreResult:
         if any(term in lower_text for term in forbidden_terms)
         else 1.0,
         "buyer_next_step_keyword_present": 1.0 if CTA_PATTERN.search(text) else 0.0,
+        "single_ask_only": 1.0 if len(cta_sentences) <= 1 else 0.0,
     }
-    return ScoreResult(scores=scores, passed=all(value >= 1.0 for value in scores.values()))
+    deterministic_dimensions = task.get("scoring_config", {}).get(
+        "deterministic_dimensions", DETERMINISTIC_CHECKS
+    )
+    selected_scores = {
+        dimension: scores[dimension]
+        for dimension in deterministic_dimensions
+        if dimension in scores
+    }
+    return ScoreResult(
+        scores=selected_scores,
+        passed=all(value >= 1.0 for value in selected_scores.values()),
+    )
 
 
 def smoke_tasks() -> list[tuple[dict[str, Any], str, bool]]:
     return [
         (
-            {"expected_terms": ["workflow"], "forbidden_terms": ["obviously"]},
-            "Your sales workflow has a clear handoff gap. Could we book a 20-minute demo to map the next step?",
+            {
+                "channel": "email",
+                "rubric": {
+                    "expected_terms": ["workflow"],
+                    "forbidden_terms": ["obviously"],
+                    "banned_phrases": [],
+                    "max_body_words": 120,
+                    "max_subject_chars": 60,
+                },
+            },
+            {
+                "subject": "Request: workflow handoff question",
+                "body": "Your sales workflow has a clear handoff gap. Could we book a 20-minute demo to map the next step?",
+            },
             True,
         ),
         (
-            {"expected_terms": ["crm"], "forbidden_terms": ["basic"]},
-            "The CRM signal suggests follow-up timing is the issue. Reply with a good time for a short call.",
+            {
+                "channel": "email",
+                "rubric": {
+                    "expected_terms": ["crm"],
+                    "forbidden_terms": ["basic"],
+                    "banned_phrases": [],
+                    "max_body_words": 200,
+                    "max_subject_chars": 60,
+                },
+            },
+            {
+                "subject": "Re: CRM workflow question",
+                "body": "The CRM signal suggests follow-up timing is the issue. Reply with a good time for a short call.",
+            },
             True,
         ),
         (
-            {"expected_terms": ["automation"], "forbidden_terms": ["just need to"]},
-            "Automation can help with routing, but the buyer context matters. Can you share one recent stalled deal?",
+            {
+                "channel": "email",
+                "rubric": {
+                    "expected_terms": ["automation"],
+                    "forbidden_terms": ["just need to"],
+                    "banned_phrases": [],
+                    "max_body_words": 120,
+                    "max_subject_chars": 60,
+                },
+            },
+            {
+                "subject": "Question: routing bottleneck",
+                "body": "Automation can help with routing, but the buyer context matters. Can you share one recent stalled deal?",
+            },
             True,
         ),
         (
-            {"expected_terms": ["workflow"], "forbidden_terms": ["obviously"]},
-            "You obviously need basic monitoring.",
+            {
+                "channel": "email",
+                "rubric": {
+                    "expected_terms": ["workflow"],
+                    "forbidden_terms": ["obviously"],
+                    "banned_phrases": [],
+                    "max_body_words": 120,
+                    "max_subject_chars": 60,
+                },
+            },
+            {"subject": "Question: workflow gap", "body": "You obviously need basic monitoring."},
             False,
         ),
         (
-            {"expected_terms": ["crm"], "forbidden_terms": []},
-            "",
+            {
+                "channel": "email",
+                "rubric": {
+                    "expected_terms": ["crm"],
+                    "forbidden_terms": [],
+                    "banned_phrases": [],
+                    "max_body_words": 200,
+                    "max_subject_chars": 60,
+                },
+            },
+            {"subject": "Re: CRM note", "body": ""},
             False,
         ),
     ]
