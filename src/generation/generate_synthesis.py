@@ -1,8 +1,4 @@
-"""Scaffold Tenacious-Bench synthetic task generation.
-
-Default mode writes a prompt manifest for later review. Optional live mode sends
-the prompts to an OpenRouter-compatible chat model and validates returned tasks.
-"""
+"""Tenacious-Bench synthetic task generation with committed prompts and judge filtering."""
 
 from __future__ import annotations
 
@@ -21,9 +17,20 @@ if __package__ in (None, ""):
 
 from src.generation.common import (
     REPO_ROOT,
+    append_cost_log,
     prompt_manifest_path,
     validate_task,
     write_jsonl,
+)
+from src.generation.synthesis_policy import (
+    DEFAULT_GENERATION_MODEL,
+    DEFAULT_JUDGE_MODEL,
+    JUDGE_SYSTEM_PROMPT,
+    PROMPT_VERSION,
+    SYSTEM_PROMPT,
+    build_generation_prompt,
+    build_judge_prompt,
+    enforce_rotation,
 )
 
 
@@ -51,22 +58,6 @@ SYNTHESIS_SPECS: list[dict[str, Any]] = [
     },
 ]
 
-
-SYSTEM_PROMPT = """You are authoring Tenacious-Bench v0.1 benchmark tasks.
-Return exactly one JSON object matching the local schema for each request.
-The task must:
-- be Tenacious-specific B2B sales work, not generic retail
-- use channel=email
-- use subject/body output format
-- keep one ask only
-- preserve Tenacious style markers: direct, grounded, honest, professional, non-condescending where relevant
-- include metadata.style_guide_version=\"v2\"
-- include metadata.retrieval_provenance when source_mode=synthetic and failure_dimension=signal_grounding
-- set ground_truth.target_decision to accept, revise, or block
-- use source_mode=synthetic
-Do not wrap the JSON in markdown fences."""
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate synthetic Tenacious-Bench tasks or prompt manifests.")
     parser.add_argument(
@@ -82,80 +73,126 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default="qwen/qwen3-next-80b-a3b-instruct",
-        help="OpenRouter model name to use in live mode.",
+        default=DEFAULT_GENERATION_MODEL,
+        help="OpenRouter model name to use for generation in live mode.",
+    )
+    parser.add_argument(
+        "--judge-model",
+        default=DEFAULT_JUDGE_MODEL,
+        help="OpenRouter model name to use for synthesis judge filtering in live mode.",
+    )
+    parser.add_argument(
+        "--partition",
+        choices=("train", "dev", "held_out"),
+        default="dev",
+        help="Partition label to stamp onto the generated tasks.",
     )
     return parser.parse_args()
 
 
-def build_user_prompt(spec: dict[str, Any], index: int) -> str:
-    return f"""Create one schema-valid Tenacious-Bench task.
-Task id stem: dev-{index:03d}-{spec['task_id_stub']}
-Focus: {spec['focus']}
-Probe ID: {spec['probe_id']}
-Failure dimension: {spec['failure_dimension']}
-Message kind: {spec['message_kind']}
-Partition: dev
-Use the current schema fields and include explicit signal evidence, bench context, prior thread context, and a strict rubric.
-The candidate output should be realistic outreach, not a placeholder."""
-
-
-def build_prompt_manifest() -> list[dict[str, Any]]:
+def build_prompt_manifest(partition: str, generation_model: str, judge_model: str) -> list[dict[str, Any]]:
     manifest = []
     for index, spec in enumerate(SYNTHESIS_SPECS, start=1):
         manifest.append(
             {
-                "id": f"dev-{index:03d}-{spec['task_id_stub']}",
+                "id": f"{partition}-synthetic-{index:03d}-{spec['task_id_stub']}",
+                "prompt_version": PROMPT_VERSION,
                 "model_role": "bulk_variation_generation",
+                "generation_model": generation_model,
+                "judge_model": judge_model,
                 "probe_id": spec["probe_id"],
                 "failure_dimension": spec["failure_dimension"],
                 "system_prompt": SYSTEM_PROMPT,
-                "user_prompt": build_user_prompt(spec, index),
+                "user_prompt": build_generation_prompt(spec, index, partition),
+                "judge_system_prompt": JUDGE_SYSTEM_PROMPT,
             }
         )
     return manifest
 
 
-def generate_live_tasks(model: str) -> list[dict[str, Any]]:
+def judge_candidate(client: OpenAI, judge_model: str, task: dict[str, Any]) -> dict[str, Any]:
+    response = client.chat.completions.create(
+        model=judge_model,
+        temperature=0,
+        messages=[
+            {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+            {"role": "user", "content": build_judge_prompt(task)},
+        ],
+        response_format={"type": "json_object"},
+    )
+    content = response.choices[0].message.content or ""
+    judgment = json.loads(content)
+    if judgment.get("decision") not in {"accept", "revise", "block"}:
+        raise ValueError(f"Unexpected judge decision payload: {judgment}")
+    return judgment
+
+
+def generate_live_tasks(model: str, judge_model: str, partition: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     load_dotenv()
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY is required for live synthesis mode.")
+    enforce_rotation(model, judge_model)
 
     client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
     tasks: list[dict[str, Any]] = []
-    skipped: list[dict[str, str]] = []
+    skipped: list[dict[str, Any]] = []
     for index, spec in enumerate(SYNTHESIS_SPECS, start=1):
         response = client.chat.completions.create(
             model=model,
             temperature=0,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": build_user_prompt(spec, index)},
+                {"role": "user", "content": build_generation_prompt(spec, index, partition)},
             ],
+            response_format={"type": "json_object"},
         )
         content = response.choices[0].message.content or ""
         try:
             task = json.loads(content)
+            task["partition"] = partition
+            task["source_mode"] = "synthetic"
+            task.setdefault("metadata", {})
+            task["metadata"]["prompt_version"] = PROMPT_VERSION
+            task["metadata"]["generation_model"] = model
+            task["metadata"]["judge_model"] = judge_model
             validate_task(task)
+            judgment = judge_candidate(client, judge_model, task)
         except (json.JSONDecodeError, ValueError) as exc:
             skipped.append(
                 {
-                    "id": f"dev-{index:03d}-{spec['task_id_stub']}",
+                    "id": f"{partition}-synthetic-{index:03d}-{spec['task_id_stub']}",
                     "reason": str(exc),
                 }
             )
             continue
+        if judgment["decision"] != "accept":
+            skipped.append(
+                {
+                    "id": task.get("task_id", f"{partition}-synthetic-{index:03d}-{spec['task_id_stub']}"),
+                    "reason": "judge_rejected",
+                    "judgment": judgment,
+                }
+            )
+            continue
+        task["metadata"]["judge_confidence"] = judgment.get("confidence", "")
+        task["metadata"]["judge_reasons"] = judgment.get("reasons", [])
         tasks.append(task)
-    if skipped:
-        skip_path = REPO_ROOT / "tenacious_bench_v0.1" / "dev" / "synthetic_tasks_skipped.json"
-        skip_path.write_text(json.dumps(skipped, indent=2), encoding="utf-8")
-    return tasks
+        append_cost_log(
+            bucket="dataset_authoring",
+            provider="OpenRouter",
+            model_or_compute=f"{model} -> {judge_model}",
+            purpose=f"synthetic_generation_and_judge_filter:{task.get('task_id', '')}",
+            estimated_cost_usd=0.0,
+            actual_cost_usd=0.0,
+            notes="Live synthesis call completed; cost fields left zero until provider usage export is available.",
+        )
+    return tasks, skipped
 
 
 def main() -> int:
     args = parse_args()
-    manifest = build_prompt_manifest()
+    manifest = build_prompt_manifest(args.partition, args.model, args.judge_model)
     write_jsonl(prompt_manifest_path(args.output), manifest)
 
     if not args.live:
@@ -165,14 +202,20 @@ def main() -> int:
                     "mode": "offline",
                     "prompt_manifest": str(prompt_manifest_path(args.output)),
                     "prompt_count": len(manifest),
+                    "prompt_version": PROMPT_VERSION,
+                    "generation_model": args.model,
+                    "judge_model": args.judge_model,
                 },
                 indent=2,
             )
         )
         return 0
 
-    tasks = generate_live_tasks(args.model)
+    tasks, skipped = generate_live_tasks(args.model, args.judge_model, args.partition)
     write_jsonl(args.output, tasks)
+    if skipped:
+        skip_path = args.output.with_name(args.output.stem + "_judge_rejections.json")
+        skip_path.write_text(json.dumps(skipped, indent=2), encoding="utf-8")
     print(
         json.dumps(
             {
@@ -180,6 +223,10 @@ def main() -> int:
                 "output_path": str(args.output),
                 "task_count": len(tasks),
                 "task_ids": [task["task_id"] for task in tasks],
+                "rejected_count": len(skipped),
+                "prompt_version": PROMPT_VERSION,
+                "generation_model": args.model,
+                "judge_model": args.judge_model,
             },
             indent=2,
         )

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -45,6 +46,41 @@ def write_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
     if lines:
         payload += "\n"
     path.write_text(payload, encoding="utf-8")
+
+
+def append_cost_log(
+    *,
+    bucket: str,
+    provider: str,
+    model_or_compute: str,
+    purpose: str,
+    estimated_cost_usd: float,
+    actual_cost_usd: float,
+    notes: str,
+    path: Path | None = None,
+) -> None:
+    log_path = path or (REPO_ROOT / "cost" / "log.csv")
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    if not log_path.exists():
+        header = (
+            "timestamp_utc,bucket,provider,model_or_compute,purpose,"
+            "estimated_cost_usd,actual_cost_usd,notes\n"
+        )
+        log_path.write_text(header, encoding="utf-8")
+
+    timestamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    row = [
+        timestamp,
+        bucket,
+        provider,
+        model_or_compute,
+        purpose,
+        f"{estimated_cost_usd:.4f}",
+        f"{actual_cost_usd:.4f}",
+        notes.replace("\n", " ").replace(",", ";"),
+    ]
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(",".join(row) + "\n")
 
 
 def prompt_manifest_path(output_path: Path) -> Path:
