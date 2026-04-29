@@ -6,9 +6,10 @@ A Tenacious-specific evaluation benchmark and trained judge for the Week 10 Conv
 
 ## Status
 
-Acts I-II in progress. Current repo state: 4 authoring modes now have runnable code paths, `train/`
-has 2 committed seed tasks, `dev/` has 8 committed tasks, and `held_out/` currently exists as a
-local gitignored partition with 2 seed tasks for contamination/eval scaffolding.
+Acts I-II are implemented in repo form. Current committed corpus: `train/` has 132 tasks, `dev/`
+has 79 tasks, and `held_out/` has 14 sealed tasks. All 4 authoring modes have runnable code
+paths, including live synthetic generation with judge rotation, seed stamping, and duplicate
+filtering.
 
 ## What this is
 
@@ -36,11 +37,10 @@ python src/scoring/scoring_evaluator.py
 python src/generation/generate_trace_derived.py
 python src/generation/generate_programmatic.py
 python src/generation/generate_hand_authored.py --partition train
-# local only because held_out/ is gitignored
 python src/generation/generate_hand_authored.py --partition held_out
-python src/generation/generate_synthesis.py
+python src/generation/generate_synthesis.py --seed 11
 # optional live synthesis with judge rotation enforced in code
-python src/generation/generate_synthesis.py --live --judge-model deepseek/deepseek-chat
+python src/generation/generate_synthesis.py --live --judge-model deepseek/deepseek-chat --seed 11
 
 # Run contamination checks
 python src/generation/fetch_embedding_model.py
@@ -74,3 +74,5 @@ bootstrap that cache, then rerun contamination to get a true embedding-backed pa
 - `docs/PRD.md` - acceptance criteria
 - `docs/progress.md` - decision log
 - `docs/audit_memo.md` - what tau2-Bench misses for Tenacious-specific work
+- `docs/datasheet.md` - Gebru-style datasheet with layered corpus details
+- `docs/memos/` - synthesis decision memos for synthetic-data policy and judge rotation

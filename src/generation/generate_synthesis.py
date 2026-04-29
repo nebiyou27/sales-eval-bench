@@ -6,12 +6,29 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from dotenv import load_dotenv
-from openai import OpenAI, RateLimitError
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional for offline manifest generation
+    load_dotenv = None
+
+try:
+    from openai import OpenAI, RateLimitError
+    OPENAI_AVAILABLE = True
+except ImportError:  # pragma: no cover - optional for offline manifest generation
+    OPENAI_AVAILABLE = False
+    OpenAI = Any  # type: ignore[assignment]
+
+    class RateLimitError(Exception):
+        """Fallback used when the OpenAI package is not installed."""
+
+
+if TYPE_CHECKING:
+    from openai import OpenAI as OpenAIClient
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[2]))
@@ -20,6 +37,7 @@ from src.generation.common import (
     REPO_ROOT,
     append_cost_log,
     prompt_manifest_path,
+    read_jsonl,
     validate_task,
     write_jsonl,
 )
@@ -33,6 +51,8 @@ from src.generation.synthesis_policy import (
     build_judge_prompt,
     enforce_rotation,
 )
+
+DEFAULT_SEED = 11
 
 
 SYNTHESIS_SPECS: list[dict[str, Any]] = [
@@ -201,6 +221,26 @@ def _partition_specs(partition: str) -> list[dict[str, Any]]:
     return [s for s in SYNTHESIS_SPECS if partition in s.get("partitions", [partition])]
 
 
+def _normalize_text(value: str) -> str:
+    collapsed = re.sub(r"\s+", " ", value.strip().lower())
+    return re.sub(r"[^a-z0-9 ]+", "", collapsed)
+
+
+def dedup_key(task: dict[str, Any]) -> tuple[str, str, str, str, str]:
+    candidate_output = task.get("candidate_output", {})
+    return (
+        str(task.get("failure_dimension", "")).strip().lower(),
+        str(task.get("channel", "")).strip().lower(),
+        str(task.get("message_kind", "")).strip().lower(),
+        _normalize_text(str(candidate_output.get("subject", ""))),
+        _normalize_text(str(candidate_output.get("body", ""))),
+    )
+
+
+def _task_id(task: dict[str, Any]) -> str:
+    return str(task.get("task_id", "")).strip()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate synthetic Tenacious-Bench tasks or prompt manifests.")
     parser.add_argument(
@@ -230,12 +270,24 @@ def parse_args() -> argparse.Namespace:
         default="dev",
         help="Partition label to stamp onto the generated tasks.",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=DEFAULT_SEED,
+        help="Base seed for live generation and judge calls. Incremented per synthesis spec.",
+    )
     return parser.parse_args()
 
 
-def build_prompt_manifest(partition: str, generation_model: str, judge_model: str) -> list[dict[str, Any]]:
+def build_prompt_manifest(
+    partition: str,
+    generation_model: str,
+    judge_model: str,
+    seed: int,
+) -> list[dict[str, Any]]:
     manifest = []
     for index, spec in enumerate(_partition_specs(partition), start=1):
+        spec_seed = seed + index - 1
         manifest.append(
             {
                 "id": f"{partition}-synthetic-{index:03d}-{spec['task_id_stub']}",
@@ -243,6 +295,7 @@ def build_prompt_manifest(partition: str, generation_model: str, judge_model: st
                 "model_role": "bulk_variation_generation",
                 "generation_model": generation_model,
                 "judge_model": judge_model,
+                "generation_seed": spec_seed,
                 "probe_id": spec["probe_id"],
                 "failure_dimension": spec["failure_dimension"],
                 "system_prompt": SYSTEM_PROMPT,
@@ -253,11 +306,18 @@ def build_prompt_manifest(partition: str, generation_model: str, judge_model: st
     return manifest
 
 
-def judge_candidate(client: OpenAI, judge_model: str, task: dict[str, Any], retries: int = 2) -> dict[str, Any]:
+def judge_candidate(
+    client: "OpenAIClient",
+    judge_model: str,
+    task: dict[str, Any],
+    seed: int,
+    retries: int = 2,
+) -> dict[str, Any]:
     for attempt in range(retries + 1):
         try:
             response = client.chat.completions.create(
                 model=judge_model,
+                seed=seed,
                 temperature=0,
                 messages=[
                     {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
@@ -276,21 +336,35 @@ def judge_candidate(client: OpenAI, judge_model: str, task: dict[str, Any], retr
             time.sleep(15 * (attempt + 1))
 
 
-def generate_live_tasks(model: str, judge_model: str, partition: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    load_dotenv()
+def generate_live_tasks(
+    model: str,
+    judge_model: str,
+    partition: str,
+    output: Path,
+    seed: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if load_dotenv is not None:
+        load_dotenv()
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY is required for live synthesis mode.")
+    if not OPENAI_AVAILABLE:
+        raise RuntimeError("The openai package is required for live synthesis mode.")
     enforce_rotation(model, judge_model)
 
     client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
+    existing_rows = read_jsonl(output)
+    seen_task_ids = {_task_id(row) for row in existing_rows if _task_id(row)}
+    seen_dedup_keys = {dedup_key(row) for row in existing_rows}
     tasks: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     for index, spec in enumerate(_partition_specs(partition), start=1):
+        spec_seed = seed + index - 1
         for gen_attempt in range(3):
             try:
                 response = client.chat.completions.create(
                     model=model,
+                    seed=spec_seed,
                     temperature=0,
                     messages=[
                         {"role": "system", "content": SYSTEM_PROMPT},
@@ -312,8 +386,28 @@ def generate_live_tasks(model: str, judge_model: str, partition: str) -> tuple[l
             task["metadata"]["prompt_version"] = PROMPT_VERSION
             task["metadata"]["generation_model"] = model
             task["metadata"]["judge_model"] = judge_model
+            task["metadata"]["generation_seed"] = spec_seed
+            task["metadata"]["judge_seed"] = spec_seed
             validate_task(task)
-            judgment = judge_candidate(client, judge_model, task)
+            task_id = _task_id(task)
+            if task_id and task_id in seen_task_ids:
+                skipped.append(
+                    {
+                        "id": task_id,
+                        "reason": "duplicate_task_id",
+                    }
+                )
+                continue
+            task_key = dedup_key(task)
+            if task_key in seen_dedup_keys:
+                skipped.append(
+                    {
+                        "id": task_id or f"{partition}-synthetic-{index:03d}-{spec['task_id_stub']}",
+                        "reason": "duplicate_candidate_output",
+                    }
+                )
+                continue
+            judgment = judge_candidate(client, judge_model, task, spec_seed)
         except (json.JSONDecodeError, ValueError) as exc:
             skipped.append(
                 {
@@ -334,6 +428,9 @@ def generate_live_tasks(model: str, judge_model: str, partition: str) -> tuple[l
         task["metadata"]["judge_confidence"] = judgment.get("confidence", "")
         task["metadata"]["judge_reasons"] = judgment.get("reasons", [])
         tasks.append(task)
+        if task_id:
+            seen_task_ids.add(task_id)
+        seen_dedup_keys.add(task_key)
         append_cost_log(
             bucket="dataset_authoring",
             provider="OpenRouter",
@@ -351,7 +448,7 @@ def main() -> int:
     output = args.output or (
         REPO_ROOT / "tenacious_bench_v0.1" / args.partition / "synthetic_tasks.jsonl"
     )
-    manifest = build_prompt_manifest(args.partition, args.model, args.judge_model)
+    manifest = build_prompt_manifest(args.partition, args.model, args.judge_model, args.seed)
     write_jsonl(prompt_manifest_path(output), manifest)
 
     if not args.live:
@@ -366,14 +463,16 @@ def main() -> int:
                     "prompt_version": PROMPT_VERSION,
                     "generation_model": args.model,
                     "judge_model": args.judge_model,
+                    "seed": args.seed,
                 },
                 indent=2,
             )
         )
         return 0
 
-    tasks, skipped = generate_live_tasks(args.model, args.judge_model, args.partition)
-    write_jsonl(output, tasks)
+    existing_rows = read_jsonl(output)
+    tasks, skipped = generate_live_tasks(args.model, args.judge_model, args.partition, output, args.seed)
+    write_jsonl(output, [*existing_rows, *tasks])
     if skipped:
         skip_path = output.with_name(output.stem + "_judge_rejections.json")
         skip_path.write_text(json.dumps(skipped, indent=2), encoding="utf-8")
@@ -383,12 +482,14 @@ def main() -> int:
                 "mode": "live",
                 "partition": args.partition,
                 "output_path": str(output),
-                "task_count": len(tasks),
+                "task_count": len(existing_rows) + len(tasks),
+                "new_task_count": len(tasks),
                 "task_ids": [task["task_id"] for task in tasks],
                 "rejected_count": len(skipped),
                 "prompt_version": PROMPT_VERSION,
                 "generation_model": args.model,
                 "judge_model": args.judge_model,
+                "seed": args.seed,
             },
             indent=2,
         )

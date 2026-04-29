@@ -200,8 +200,9 @@ output tokens, and USD cost.
 
 ### Synthetic Data Quality Gate
 
-The Day 0 reading memo in `docs/memos/synthetic_data_best_practices_v0.md` sets the
-dataset-authoring rule for Acts II-III: synthetic examples must be controlled, metadata-rich,
+The Day 0 reading memos in `docs/memos/synthetic_data_best_practices_v0.md` and
+`docs/memos/judge_rotation_and_preference_leakage_v0.md` set the dataset-authoring rule for
+Acts II-III: synthetic examples must be controlled, metadata-rich, seed-stamped, deduplicated,
 and filtered before partition assignment. Bulk generation should start from probe and
 trace-derived templates, preserve provenance in `metadata`, and pass deterministic checks before
 any model-family-rotated judge score is trusted. This keeps the benchmark focused on

@@ -4,6 +4,28 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-30 - Feedback pass: datasheet, second memo, seeded and deduped synthesis
+
+**Completed:** Closed the remaining documentation and synthesis-pipeline feedback gaps by
+rewriting the datasheet, adding the second synthesis memo, and making live synthesis runs
+reproducible and duplicate-aware.
+
+**Changes:**
+
+- `src/generation/generate_synthesis.py`: Added `--seed`, per-spec seed stamping in prompt
+  manifests and accepted rows, duplicate filtering against existing outputs and the current
+  batch, and live-output merge behavior so reruns do not overwrite prior accepted rows.
+- `tests/test_generate_synthesis.py`: Added coverage for manifest seed stamping and duplicate-key
+  normalization.
+- `docs/datasheet.md`: Rewritten in clean ASCII with explicit Gebru seven-section coverage,
+  Pushkarna-style layered detail, and counts aligned to the committed corpus.
+- `docs/memos/judge_rotation_and_preference_leakage_v0.md`: Added as the second synthesis memo.
+- `README.md` and `docs/methodology.md`: Updated to point at the full memo set and the seeded,
+  deduplicated synthesis workflow.
+
+**Verification:** Unit tests pass for synthesis policy and generation helpers. Offline synthesis
+manifest generation now reports the configured seed in its summary output.
+
 ## 2026-04-30 - Wave 4 — synthetic tasks, held_out expansion, 225/225 scorer pass
 
 **Completed:** Synthetic gap-filling tasks generated and judge-filtered (R2: Qwen3-Next-80B

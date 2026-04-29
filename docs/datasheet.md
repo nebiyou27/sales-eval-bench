@@ -1,233 +1,254 @@
-# Tenacious-Bench v0.1 — Datasheet
+# Tenacious-Bench v0.1 Datasheet
 
-Follows Gebru et al. (2021) seven-section structure with Pushkarna-style layered detail
-(telescopic summary → periscopic structure → microscopic field/schema detail).
+This datasheet follows the seven-section structure from Gebru et al. and uses a Pushkarna-style
+layering pattern:
 
----
+- Telescopic: what the corpus is for.
+- Periscopic: how the corpus is organized and produced.
+- Microscopic: the concrete fields, checks, and known gaps.
 
 ## 1. Motivation
 
 **Telescopic summary.** Tenacious-Bench v0.1 is a machine-verifiable benchmark for evaluating
-the Tenacious Week 10 Conversion Engine on the two failure modes that caused 100% of observed
-Delta-A degradation: gap-condescension (P33, 15.6% A/B trigger rate) and AI-maturity
-inconsistency (P24, 43.3% τ²-run incident rate).
+Tenacious sales-agent outputs on the failure modes that mattered most in Week 10: gap
+condescension, AI-maturity inconsistency, signal overclaiming, output validity, style-guide
+drift, and weak buyer next steps.
 
-**Periscopic structure.** The benchmark supports:
-- Deterministic scoring without human input (12 rule-based dimensions per task)
-- ORPO preference-pair generation for LoRA fine-tuning (Path B)
-- Ablation studies comparing judge-only vs. trained-critic evaluation on held-out tasks
+**Periscopic structure.** The benchmark is intended for three linked uses:
 
-**Who created this and why?** Nebiyou Abebe (10 Academy TRP1) created this dataset as part of
-Week 11 to support training a LoRA-based judge that catches the P24 and P33 failure modes
-before outreach is sent. The immediate use case is Tenacious internal quality assurance.
+- scoring candidate outputs with deterministic checks first and judge-backed checks second,
+- preparing ORPO preference data for a small judge or critic model,
+- running sealed held-out comparisons against prompt-only and trained-critic baselines.
 
-**Funding.** No external funding. Total projected API spend ≤ $5 (dev-tier models only).
+**Who created it and why.** Nebiyou Abebe created the dataset for 10 Academy TRP1 Week 11 so the
+project can move from "the model often sounds fine" to "the system can reliably accept, revise, or
+block risky outreach before it is sent."
 
----
+**Funding and cost posture.** No external funding. The repo assumes low-cost authoring and keeps
+generation, filtering, and contamination work in the dev-tier budget, with all live calls logged
+to `cost/log.csv`.
 
 ## 2. Composition
 
-**Telescopic summary.** 211 machine-verifiable B2B outreach tasks across 3 partitions, covering
-6 failure dimensions, 3 difficulty levels, 3 channels, 3 message kinds, and 4 source modes.
-An additional 14 held_out tasks are sealed and gitignored.
-
-**Periscopic structure.**
+**Telescopic summary.** The committed corpus currently contains 225 tasks: 132 `train`, 79 `dev`,
+and 14 sealed `held_out`. The public training surface is 211 tasks (`train` + `dev`), while
+`held_out` remains excluded from training use.
 
 ### Partition counts
 
-| partition | count | % of total (train+dev) |
-|---|---|---|
-| train | 132 | 62.6% |
-| dev | 79 | 37.4% |
-| held_out | 14 (partial) | sealed, gitignored |
-| **total (train+dev)** | **211** | |
+| partition | count | note |
+|---|---:|---|
+| `train` | 132 | committed |
+| `dev` | 79 | committed |
+| `held_out` | 14 | committed but sealed for evaluation |
+| **total** | **225** | |
 
-Original target was train 125 / dev 75 = 200 total. Wave 4 synthetic generation added 11
-tasks (7 train + 4 dev), bringing totals to 132 train and 79 dev. held_out expanded from 4
-to 14 hand_authored tasks. Target of 50 held_out remains for full ablation set.
+### Failure-dimension coverage
 
-### By failure_dimension
+For the public authoring surface (`train` + `dev`):
 
-| failure_dimension | train | dev | total (train+dev) | target (train+dev) |
-|---|---|---|---|---|
-| `gap_condescension` (P33) | 25 | 14 | 39 | 40 |
-| `ai_maturity_consistency` (P24) | 25 | 14 | 39 | 40 |
-| `output_validity` | 22 | 14 | 36 | 32 |
-| `signal_grounding` | 21 | 11 | 32 | 31 |
-| `style_guide_adherence` | 22 | 17 | 39 | 30 |
-| `next_step_quality` | 17 | 9 | 26 | 27 |
-| **Total** | **132** | **79** | **211** | **200** |
+| failure_dimension | train | dev | total |
+|---|---:|---:|---:|
+| `gap_condescension` | 25 | 14 | 39 |
+| `ai_maturity_consistency` | 25 | 14 | 39 |
+| `output_validity` | 22 | 14 | 36 |
+| `signal_grounding` | 21 | 11 | 32 |
+| `style_guide_adherence` | 22 | 17 | 39 |
+| `next_step_quality` | 17 | 9 | 26 |
+| **total** | **132** | **79** | **211** |
 
-Wave 4 synthetic tasks closed the signal_grounding gap (+7 over target) and reduced the
-next_step_quality gap to −1. P24 and P33 remain the primary dimensions at 25 train tasks each.
+For the sealed `held_out` split:
 
-### By source_mode
+| failure_dimension | held_out |
+|---|---:|
+| `gap_condescension` | 3 |
+| `ai_maturity_consistency` | 3 |
+| `signal_grounding` | 3 |
+| `style_guide_adherence` | 2 |
+| `next_step_quality` | 2 |
+| `output_validity` | 1 |
 
-| source_mode | train | dev | total (train+dev) | target (full corpus) |
-|---|---|---|---|---|
-| `programmatic` | 72 | 51 | 123 | 75 |
-| `trace_derived` | 36 | 24 | 60 | 50 |
-| `hand_authored` | 17 | 0 | 17 | 25 |
-| `synthetic` | 7 | 4 | 11 | 100 |
-| **Total** | **132** | **79** | **211** | **250** |
+### Source-mode coverage
 
-Synthetic mode reached 11/100 tasks via live Qwen3-Next-80B generation + DeepSeek V3.2 judge
-filter (R2 compliant). Remaining 89 synthetic tasks are planned for held_out expansion and
-additional gap-filling before the May 3 deadline.
+| source_mode | train | dev | held_out | total |
+|---|---:|---:|---:|---:|
+| `programmatic` | 72 | 51 | 0 | 123 |
+| `trace_derived` | 36 | 24 | 0 | 60 |
+| `hand_authored` | 17 | 0 | 14 | 31 |
+| `synthetic` | 7 | 4 | 0 | 11 |
+| **total** | **132** | **79** | **14** | **225** |
 
-### By difficulty
+### Difficulty, channel, and message-kind coverage
 
-| difficulty | train | dev | total |
-|---|---|---|---|
-| hard | 87 | — | 87 |
-| medium | 66 | — | 66 |
-| easy | 58 | — | 58 |
+Full committed corpus:
 
-### By channel
-
-| channel | train | dev | total (train+dev) | target (train+dev) |
-|---|---|---|---|---|
-| email | — | — | 144 | 150 |
-| linkedin_dm | — | — | 58 | 75 |
-| sms | — | — | 9 | 25 |
-
-SMS remains under target (9/25). Planned synthetic expansion will add SMS-channel tasks.
-
-### By message_kind (train+dev)
-
-| message_kind | count |
+| field | values |
 |---|---|
-| warm_reply | 84 |
-| cold_outreach | 68 |
-| reengagement | 59 |
+| `difficulty` | `hard` 97, `medium` 70, `easy` 58 |
+| `channel` | `email` 156, `linkedin_dm` 60, `sms` 9 |
+| `message_kind` | `warm_reply` 91, `cold_outreach` 75, `reengagement` 59 |
 
-**Microscopic field/schema detail.** Each task is a JSON object conforming to `schema.json`
-(Draft 2020-12). Required top-level fields: `task_id`, `partition`, `source_mode`, `difficulty`,
-`failure_dimension`, `channel`, `message_kind`, `input`, `candidate_output`, `ground_truth`,
-`rubric`, `scoring_config`, `metadata`. The `input` object contains `prospect` (company, role,
-stage), `hiring_signal_brief` (segment, confidence, signals array, ai_maturity), `bench_context`
-(supported_stacks, pricing_scope), and `prior_thread` (contacted_before, summary). The
-`candidate_output` contains `body` and (for email) `subject`. The `rubric` specifies
-`expected_terms`, `forbidden_terms`, `banned_phrases`, `max_body_words`, and tone markers.
-`scoring_config.deterministic_dimensions` lists the checks to run without human input.
+**Microscopic schema detail.** Every task is a JSON object validated against `schema.json` and
+includes the following required top-level fields:
 
----
+- `task_id`
+- `partition`
+- `source_mode`
+- `difficulty`
+- `failure_dimension`
+- `channel`
+- `message_kind`
+- `input`
+- `candidate_output`
+- `ground_truth`
+- `rubric`
+- `scoring_config`
+- `metadata`
+
+The `input` object carries prospect context, signal summaries, benchmark constraints, and prior
+thread context. `candidate_output` carries the message body and, for email, a subject line.
+`rubric` holds expected terms, banned phrases, and formatting constraints. `scoring_config`
+declares which dimensions are deterministic and which require judge-backed review.
 
 ## 3. Collection Process
 
-**Telescopic summary.** Tasks were created using four authoring modes: trace_derived (from
-audited Week 10 failure traces), programmatic (deterministic blueprint expansion), hand_authored
-(explicit adversarial seeds), and synthetic (offline prompt manifests; live generation pending).
+**Telescopic summary.** The corpus is assembled through four authoring modes so the benchmark can
+cover grounded reconstruction, deterministic variation, deliberately hard adversarial cases, and
+limited live synthesis.
 
-**Periscopic structure.**
+### Trace-derived tasks
 
-### trace_derived (60 tasks)
-Source: `seed/trace_log.jsonl` — 41 Week 10 simulation records with `reward=0.0`. Blueprints
-assign failure_dimension, difficulty, expected_terms, and other rubric parameters. Each trace ID
-is checked against `seed/held_out_traces.jsonl` to prevent leakage. Original prompt/output
-payloads are not copied into the repo; only trace metadata (simulation_id, reward, domain,
-termination_reason) is used as provenance.
+`src/generation/generate_trace_derived.py` turns Week 10 failure-trace metadata from
+`seed/trace_log.jsonl` into task templates without copying the original full prompt/output payloads
+into the repo. Any cited trace ID is checked against `seed/held_out_traces.jsonl` before a task is
+allowed into `train` or `dev`.
 
-### programmatic (123 tasks)
-12 blueprints each define a failure scenario with 3 evidence templates, 3 ask templates,
-3 subject stems, and 2 prior-thread templates. The `materialize_tasks()` function in
-`src/generation/generate_programmatic.py` expands each blueprint across a prospect list using
-round-robin selection. No LLM calls are made; all text is deterministic.
+### Programmatic tasks
 
-### hand_authored (17 train + 4 held_out)
-Specs in `src/generation/generate_hand_authored.py`. Each task was authored against a specific
-Week 10 probe (P03, P07, P10, P12, P19, P24, P25, P26, P29, P30, P31, P32, P33, P34, P35).
-Hard-difficulty tasks were deliberately designed with adversarial constraints (expert buyer,
-conflicting signals, duplicate-send state) to maximise ORPO training signal for the most
-challenging cases.
+`src/generation/generate_programmatic.py` expands deterministic blueprints across prospect and
+message variants. This path does not call an LLM and is used for broad, auditable coverage of known
+failure patterns.
 
-### synthetic (0 live tasks, 3 dev manifests)
-`src/generation/generate_synthesis.py` produces offline prompt manifests for review. Live
-generation (Qwen3-Next-80B generator + DeepSeek V3.2 judge, R2 rotation) is scheduled for
-Wave 4. All live calls will be logged to `cost/log.csv`.
+### Hand-authored tasks
 
-**Data freshness.** All seed traces are from Week 10 (April 2026) Tenacious Conversion Engine
-runs. No live prospect data is used; all company names and contacts are fictional.
+`src/generation/generate_hand_authored.py` encodes explicitly difficult Week 10 probe-derived cases,
+including condescension risk, unsupported evidence, duplicate-send recovery, timeline gating, and
+fixture-versus-production honesty.
 
----
+### Synthetic tasks
+
+`src/generation/generate_synthesis.py` supports:
+
+- offline prompt-manifest generation,
+- live generation with a distinct judge model,
+- explicit seed stamping in manifests and accepted rows,
+- duplicate filtering against existing synthetic outputs and the current batch,
+- metadata capture for prompt version, generation model, judge model, and seed.
+
+The current committed synthetic count is 11 accepted tasks: 7 in `train` and 4 in `dev`.
+
+**Data freshness and fictionalization.** The benchmark is grounded in April 2026 Week 10 artifacts,
+but the committed tasks use fictional company and contact contexts. The repo does not publish real
+prospect identities.
 
 ## 4. Preprocessing, Cleaning, and Labeling
 
-**Telescopic summary.** Tasks pass three validation layers before entering a partition: schema
-validation (jsonschema Draft 2020-12), held-out leakage check, and contamination check
-(8-gram overlap + lexical cosine + MiniLM embedding cosine vs. held-out partition).
+**Telescopic summary.** A task is not admitted to the benchmark just because it exists. It must
+clear schema validation, held-out leakage checks, and contamination checks before it counts as
+usable data.
 
-**Preprocessing steps:**
-1. `validate_task()` in `common.py` — schema validation against `schema.json`
-2. `assert_no_held_out_leakage()` — blocks any task citing a seed held-out trace ID
-3. `contamination_check.py` — 8-gram overlap (threshold: any shared gram), lexical cosine
-   (threshold: ≥0.85), embedding cosine (threshold: ≥0.93) between held_out and train+dev
+### Validation and cleaning steps
 
-**Labeling.** `ground_truth.target_decision` is assigned by the blueprint author based on
-whether the `candidate_output` demonstrates correct behaviour (accept), a correctable failure
-(revise), or an unacceptable output (block). All current train/dev tasks have
-`target_decision=accept` — they are positive examples of correct outreach. Negative examples
-(rejected pairs for ORPO) will be generated via the synthesis pipeline in Wave 4.
+1. `validate_task(...)` in `src/generation/common.py` validates each row against `schema.json`.
+2. `assert_no_held_out_leakage(...)` blocks any `train` or `dev` task that cites a trace ID found
+   in `seed/held_out_traces.jsonl`.
+3. `src/generation/contamination_check.py` audits overlap between `held_out` and `train` or `dev`
+   using 8-gram overlap, lexical cosine, and MiniLM embedding cosine when the local embedding model
+   is available.
+4. `src/generation/generate_synthesis.py` now filters exact near-duplicates at generation time by
+   normalizing `candidate_output.subject` and `candidate_output.body` together with channel,
+   message kind, and failure dimension.
 
-**Deterministic scoring.** The `scoring_evaluator.py` evaluates 12 binary dimensions against
-the candidate_output without calling an LLM. Failing a deterministic dimension means the task's
-rubric is misconfigured and the task must be corrected before entering the corpus.
+### Labeling policy
 
----
+`ground_truth.target_decision` records whether the candidate should be `accept`, `revise`, or
+`block`. The currently committed benchmark rows are positive benchmark tasks whose candidate outputs
+represent the intended behavior for their scenario. Rejected alternatives for ORPO are materialized
+separately during preference-data preparation, not stored inline as extra rows in the benchmark
+itself.
+
+### Deterministic versus judge-backed scoring
+
+The benchmark is machine-verifiable first. Deterministic checks cover shape, length, forbidden
+terms, banned phrases, and single-ask discipline. Judge-backed dimensions are used only where the
+semantic target cannot be honestly reduced to rules alone, such as condescension, signal
+grounding, and next-step quality.
 
 ## 5. Uses
 
-**Intended uses:**
-- Training a Qwen3-0.6B ORPO LoRA judge (Path B) to catch P24 and P33 failures
-- Ablation studies comparing judge-trained model vs. prompt-only baseline on held-out split
-- Regression testing of the Tenacious Conversion Engine after updates
+### Intended uses
 
-**Inappropriate uses:**
-- Production prospect outreach (all company names are fictional)
-- Generic sales outreach training outside the Tenacious context
-- Evaluating systems that have seen the held_out partition during training
+- Train a small preference-tuned judge or critic for Tenacious-specific outreach review.
+- Run regression checks on candidate outputs after prompt, routing, or policy changes.
+- Compare prompt-only evaluation against judge-assisted evaluation on a sealed held-out split.
 
-**Limitations:**
-- All tasks are authored, not collected from real outreach; the distribution may not match
-  the full long-tail of real prospect interactions
-- Synthetic Wave (40% of target) has not been generated yet; current corpus is
-  programmatic/trace_derived-heavy
-- held_out partition is partial (4/50 target); ablation results will be preliminary until
-  held_out is fully populated
+### Out-of-scope or inappropriate uses
 
----
+- Real prospecting or production outreach generation.
+- Generic sales-email training outside the Tenacious setting.
+- Training on `held_out` or evaluating systems that have already seen the sealed split.
+
+### Key limitations
+
+- The corpus is authored and reconstructed, not sampled from a production outreach stream.
+- Synthetic coverage is intentionally limited and still far below the full target mix.
+- SMS coverage is thin.
+- The held-out split exists and is useful, but it is still below the long-term target size for a
+  larger ablation program.
 
 ## 6. Distribution
 
-**Access.** The train and dev partitions will be published to HuggingFace datasets under
-the project account before the May 3 deadline. The held_out partition is gitignored and will
-not be publicly released.
+**Canonical files.**
 
-**License.** Apache 2.0 (matching the Tenacious Conversion Engine repo).
+- `tenacious_bench_v0.1/train/*.jsonl`
+- `tenacious_bench_v0.1/dev/*.jsonl`
+- `tenacious_bench_v0.1/held_out/*.jsonl`
 
-**Export.** `tenacious_bench_v0.1/train/*.jsonl`, `tenacious_bench_v0.1/dev/*.jsonl` are the
-canonical files. Each line is a self-contained JSON task conforming to `schema.json`.
+`*_prompt_manifest.jsonl` files are generation artifacts, not benchmark rows.
 
----
+**Access policy.** `train` and `dev` are the intended sharable benchmark surfaces. `held_out` is
+committed in this repo for project continuity but must stay sealed from training and public scoring
+claims.
+
+**License.** Apache 2.0, matching the repo posture stated in project documentation.
 
 ## 7. Maintenance
 
-**Maintainer.** Nebiyou Abebe (nebiyoua@10academy.org), 10 Academy TRP1 Week 11.
+**Maintainer.** Nebiyou Abebe, 10 Academy TRP1 Week 11.
 
-**Updates planned:**
-- Wave 4 continuation (before May 3): additional synthetic tasks targeting SMS channel and
-  remaining dimension gaps, held_out expansion toward 50, ORPO preference pairs
-- Post-training: ablation results logged to `docs/inter_rater_agreement.md`
+### Update policy
 
-**Known issues:**
-- `gap_condescension` (39 tasks) and `ai_maturity_consistency` (39 tasks) are 1 below target
-  (40 each). Remaining gap closed in next synthetic batch.
-- `next_step_quality` (26 tasks) is 1 below target (27). One synthetic batch will close.
-- SMS channel is under-represented (9/25 target). Synthetic expansion will add SMS tasks.
-- `hand_authored` mode is at 17/25 target; 8 more hand-authored tasks needed.
-- held_out partial (14/50 target). Full ablation requires 36 more tasks.
+Changes to the benchmark should preserve:
 
-**Version history:**
-- v0.1-wave1: 122 tasks (train 74, dev 48) — Apr 29 2026
-- v0.1-wave2: 200 tasks (train 125, dev 75) — Apr 30 2026
-- v0.1-wave4: 211 tasks (train 132, dev 79) + held_out 14 — Apr 30 2026
+- schema validity,
+- held-out separation,
+- provenance fields in `metadata`,
+- model-family rotation between synthetic generation and synthetic judging,
+- reproducibility metadata such as prompt version and generation seed.
+
+### Known gaps
+
+- `synthetic` coverage is 11 tasks today, so the corpus remains programmatic and trace-derived
+  heavy.
+- `sms` coverage is 9 tasks, which under-represents that channel.
+- `hand_authored` coverage is concentrated in `train` and `held_out`; `dev` currently has no
+  hand-authored rows.
+- The held-out split has 14 tasks, not the larger 50-task evaluation target discussed in planning
+  docs.
+
+### Version notes
+
+- `v0.1-wave1`: initial committed benchmark skeleton.
+- `v0.1-wave2`: corpus expanded to the 200-task planning threshold for `train` + `dev`.
+- `v0.1-wave4`: 211 public authoring rows plus 14 sealed held-out rows, with live synthetic
+  generation accepted into `train` and `dev`.
