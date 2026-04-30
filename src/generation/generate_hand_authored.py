@@ -3858,7 +3858,7 @@ def _additional_held_out_specs() -> list[dict[str, Any]]:
             prior_thread={"contacted_before": True, "summary": "The systems lead asked for a one-line yes/no scope check instead of another broad question."},
             candidate_output={
                 "body": (
-                    "Hi Priyanka, to keep this easy to answer, can you share whether the routing issue is in scope this quarter: yes or no?"
+                    "Hi Priyanka, to keep this quick to answer, can you share whether the routing issue is in scope this quarter: yes or no?"
                 ),
             },
             expected_behavior="Offer a lightweight binary scope check instead of a burdensome broad reply request.",

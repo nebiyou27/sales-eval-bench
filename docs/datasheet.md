@@ -226,7 +226,7 @@ grounding, and next-step quality.
 maintained locally in this workspace, remains gitignored by repo policy, and is not versioned in
 git. It must stay sealed from training and public scoring claims.
 
-**License.** Apache 2.0, matching the repo posture stated in project documentation.
+**License.** CC-BY-4.0, matching the PRD acceptance criteria for public dataset release.
 
 ## 7. Maintenance
 
