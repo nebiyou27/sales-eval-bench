@@ -21,6 +21,7 @@ from src.generation.synthesis_policy import (
 
 PREFERENCE_REQUIRED_FIELDS = ("id", "prompt", "chosen", "rejected")
 SOURCE_PARTITIONS = ("train", "dev", "held_out")
+INDEXED_SOURCE_PARTITIONS = ("train", "dev")
 OUTPUT_PARTITION = "train"
 
 
@@ -66,7 +67,9 @@ def parse_args() -> argparse.Namespace:
 
 def index_dataset_tasks(dataset_root: Path) -> dict[str, str]:
     task_index: dict[str, str] = {}
-    for partition in SOURCE_PARTITIONS:
+    # Keep held_out completely outside preference-prep reads. We still reject any
+    # claimed held_out source_partition explicitly during record validation.
+    for partition in INDEXED_SOURCE_PARTITIONS:
         partition_dir = dataset_root / partition
         if not partition_dir.exists():
             continue

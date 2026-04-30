@@ -3,7 +3,7 @@
   "partition_counts": {
     "train": 132,
     "dev": 79,
-    "held_out": 30
+    "held_out": 50
   },
   "held_out_status": "checked",
   "seed_held_out_trace_count": 17,

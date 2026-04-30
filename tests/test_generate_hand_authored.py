@@ -13,7 +13,7 @@ class GenerateHandAuthoredTests(unittest.TestCase):
 
     def test_held_out_partition_materializes_hand_authored_tasks(self) -> None:
         tasks = materialize_tasks("held_out")
-        self.assertEqual(len(tasks), 30)
+        self.assertEqual(len(tasks), 50)
         self.assertTrue(all(task["partition"] == "held_out" for task in tasks))
         self.assertTrue(all(task["source_mode"] == "hand_authored" for task in tasks))
 

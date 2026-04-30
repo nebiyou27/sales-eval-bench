@@ -4,6 +4,48 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-30 - Final Act II hardening checkpoint: held_out 50, validation rerun, docs frozen
+
+**Completed:** Closed the held-out size gap, tightened sealed-split handling in training prep, and
+reran the full validation suite before Act III work.
+
+**Changes:**
+
+- `src/generation/generate_hand_authored.py`: Added 20 new held_out adversarial specs and
+  regenerated the local sealed `tenacious_bench_v0.1/held_out/hand_authored_tasks.jsonl` to 50
+  rows total. The
+  expansion was concentrated in `gap_condescension`, `ai_maturity_consistency`,
+  `signal_grounding`, and `next_step_quality`, with one additional `output_validity` row for
+  balance.
+- `src/training/prepare_orpo_data.py`: Hardened preference prep so dataset indexing reads only
+  `train/` and `dev/`. `held_out` remains explicitly rejected as a `source_partition`, but its rows
+  are no longer read during task-index construction.
+- `tests/test_generate_hand_authored.py` and `tests/test_prepare_orpo_data.py`: Updated held_out
+  count coverage and added a regression test confirming that training prep excludes held-out rows
+  from its task index.
+- `README.md`, `docs/datasheet.md`, `docs/methodology.md`, and
+  `docs/inter_rater_agreement.md`: Updated to the final Act II counts and current status.
+- `src/generation/contamination_check.json`: Refreshed with the embedding-backed pass over
+  `train=132`, `dev=79`, `held_out=50`.
+
+**Final corpus counts:**
+
+- Partitions: `train` 132, `dev` 79, `held_out` 50, total 261.
+- Source mode: `programmatic` 123, `trace_derived` 60, `hand_authored` 67, `synthetic` 11.
+- Failure dimension: `gap_condescension` 51, `ai_maturity_consistency` 51,
+  `signal_grounding` 44, `style_guide_adherence` 41, `output_validity` 38,
+  `next_step_quality` 36.
+- Difficulty: `hard` 132, `medium` 71, `easy` 58.
+- Channel: `email` 182, `linkedin_dm` 70, `sms` 9.
+
+**Verification:** `src/scoring/scoring_evaluator.py` smoke passed. `src/generation/contamination_check.py`
+returned `pass=true` with `embedding_check_status=embedding_check_completed` and zero overlap,
+time-shift, or source-trace findings. `python -m unittest discover -s tests` passed `26/26`.
+
+**Still pending:** The human reliability workflow in `docs/inter_rater_agreement.md` is not yet
+complete. Held-out size and contamination are closed for Act II, but second-pass and second-labeler
+agreement still need to land before stronger calibration claims in Act III.
+
 ## 2026-04-30 - Feedback pass: datasheet, second memo, seeded and deduped synthesis
 
 **Completed:** Closed the remaining documentation and synthesis-pipeline feedback gaps by

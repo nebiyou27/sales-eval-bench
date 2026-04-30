@@ -82,6 +82,12 @@ class PrepareOrpoDataTests(unittest.TestCase):
             "deepseek/deepseek-chat",
         )
 
+    def test_index_dataset_tasks_excludes_held_out_partition(self) -> None:
+        task_index = index_dataset_tasks(self.dataset_root)
+        self.assertEqual(task_index["train-task-001"], "train")
+        self.assertEqual(task_index["dev-task-001"], "dev")
+        self.assertNotIn("held-task-001", task_index)
+
     def test_prepare_preference_record_requires_rejected_model_for_rotation(self) -> None:
         record = make_record()
         record["metadata"] = {}

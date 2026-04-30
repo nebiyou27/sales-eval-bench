@@ -2,6 +2,10 @@
 
 Generated: Apr 30 2026. Covers a 30-task stratified subset drawn from the dev partition.
 
+Status note: the sealed `held_out` split now reaches 50 tasks and passes contamination, but the
+human reliability workflow documented here is still pending. Act II hardening is complete on split
+size and contamination control; Act III should still treat human agreement as unfinished work.
+
 ---
 
 ## Subset Composition
@@ -108,7 +112,7 @@ Each cell records the fraction of tasks in that row-group that received a `1.0` 
 
 ### Second-Pass Labels
 
-**STATUS: PENDING — scheduled for May 1 2026 (≥24h after first pass)**
+**STATUS: PENDING - scheduled for May 1 2026 (>=24h after first pass)**
 
 Second pass will re-run `scoring_evaluator.py` against the same 30-task subset without
 reference to first-pass results. Because deterministic scoring is stateless and rule-based,
@@ -120,7 +124,7 @@ stronger ablation claims.
 
 ## inter_rater
 
-**STATUS: PENDING — second labeler review scheduled for Wave 4 (before May 3 2026)**
+**STATUS: PENDING - second labeler review scheduled before Act III calibration claims**
 
 A second labeler will independently label the same 30-task subset using the judge dimensions
 (`output_validity`, `signal_grounding`, `next_step_quality`, `gap_condescension`,

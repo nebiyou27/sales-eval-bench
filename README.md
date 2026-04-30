@@ -6,13 +6,25 @@ A Tenacious-specific evaluation benchmark and trained judge for the Week 10 Conv
 
 ## Status
 
-Acts I-II are implemented in repo form. Current committed corpus: `train/` has 132 tasks, `dev/`
-has 79 tasks, and `held_out/` has 14 sealed tasks. All 4 authoring modes have runnable code
-paths, including live synthetic generation with judge rotation, seed stamping, and duplicate
-filtering.
+Acts I-II are implemented in repo form. Current validated corpus in this workspace: `train/` has
+132 tasks, `dev/` has 79 tasks, and local sealed `held_out/` has 50 tasks for a total of 261
+benchmark rows. All 4
+authoring modes have runnable code paths, including live synthetic generation with judge rotation,
+seed stamping, and duplicate filtering.
 
-The current `held_out/` slice is clean enough for directional comparisons and smoke evaluation,
-but it is still below the planned 50-task size for stronger ablation claims.
+The local `held_out/` slice now reaches the 50-task target and passes the contamination gate. It
+remains gitignored and sealed from training use, and `src/training/prepare_orpo_data.py` now
+indexes only `train/` and `dev/` when preparing preference data.
+
+## Current counts
+
+| field | values |
+|---|---|
+| `partition` | `train` 132, `dev` 79, `held_out` 50, `total` 261 |
+| `source_mode` | `programmatic` 123, `trace_derived` 60, `hand_authored` 67, `synthetic` 11 |
+| `failure_dimension` | `gap_condescension` 51, `ai_maturity_consistency` 51, `signal_grounding` 44, `style_guide_adherence` 41, `output_validity` 38, `next_step_quality` 36 |
+| `difficulty` | `hard` 132, `medium` 71, `easy` 58 |
+| `channel` | `email` 182, `linkedin_dm` 70, `sms` 9 |
 
 ## What this is
 
@@ -82,13 +94,13 @@ bootstrap that cache, then rerun contamination to get a true embedding-backed pa
 
 ## Forward plan
 
-The current repo is strong enough for audit, scoring, and controlled synthesis work, but two
-follow-on steps matter most:
+The current repo is strong enough for audit, scoring, controlled synthesis work, and a sealed
+held-out evaluation pass. The next two steps remain:
 
-1. Expand `held_out/` from 14 tasks toward the 50-task target so ablation claims are backed by a
-   larger sealed evaluation set.
-2. Convert the accepted benchmark rows into a richer ORPO preference corpus with explicit
+1. Convert the accepted benchmark rows into a richer ORPO preference corpus with explicit
    chosen/rejected pairs, then run the first end-to-end Unsloth smoke training pass.
+2. Complete the pending human-reliability work in `docs/inter_rater_agreement.md` before making
+   stronger ablation or benchmark-calibration claims in Act III.
 
 The next quality upgrades are intentionally quantitative:
 
@@ -96,7 +108,7 @@ The next quality upgrades are intentionally quantitative:
   `signal_grounding`,
 - report per-dimension acceptance and rejection counts for live synthesis,
 - log preference-prep drop rates and rotation-policy rejections,
-- expand held-out reporting with delta tables rather than only narrative summaries.
+- add human agreement results once the second pass and second-labeler review are complete.
 
 ## External references
 

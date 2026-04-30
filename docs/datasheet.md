@@ -30,12 +30,13 @@ to `cost/log.csv`.
 
 ## 2. Composition
 
-**Telescopic summary.** The committed corpus currently contains 225 tasks: 132 `train`, 79 `dev`,
-and 14 sealed `held_out`. The public training surface is 211 tasks (`train` + `dev`), while
-`held_out` remains excluded from training use.
+**Telescopic summary.** The current validated corpus in this workspace contains 261 tasks: 132
+`train`, 79 `dev`, and 50 local sealed `held_out`. The public training surface is 211 tasks
+(`train` + `dev`), while `held_out` remains excluded from training use.
 
-The held-out split is stable and contamination-checked, but at 14 tasks it should still be read
-as a directional evaluation slice rather than a full ablation-sized benchmark.
+The held-out split now reaches the 50-task target and passes the contamination gate, but human
+agreement work is still pending, so the corpus should not yet be described as fully
+human-calibrated.
 
 ### Partition counts
 
@@ -43,8 +44,8 @@ as a directional evaluation slice rather than a full ablation-sized benchmark.
 |---|---:|---|
 | `train` | 132 | committed |
 | `dev` | 79 | committed |
-| `held_out` | 14 | committed but sealed for evaluation |
-| **total** | **225** | |
+| `held_out` | 50 | local, gitignored, sealed for evaluation |
+| **total** | **261** | |
 
 ### Failure-dimension coverage
 
@@ -64,12 +65,12 @@ For the sealed `held_out` split:
 
 | failure_dimension | held_out |
 |---|---:|
-| `gap_condescension` | 3 |
-| `ai_maturity_consistency` | 3 |
-| `signal_grounding` | 3 |
+| `gap_condescension` | 12 |
+| `ai_maturity_consistency` | 12 |
+| `signal_grounding` | 12 |
 | `style_guide_adherence` | 2 |
-| `next_step_quality` | 2 |
-| `output_validity` | 1 |
+| `next_step_quality` | 10 |
+| `output_validity` | 2 |
 
 ### Source-mode coverage
 
@@ -77,19 +78,19 @@ For the sealed `held_out` split:
 |---|---:|---:|---:|---:|
 | `programmatic` | 72 | 51 | 0 | 123 |
 | `trace_derived` | 36 | 24 | 0 | 60 |
-| `hand_authored` | 17 | 0 | 14 | 31 |
+| `hand_authored` | 17 | 0 | 50 | 67 |
 | `synthetic` | 7 | 4 | 0 | 11 |
-| **total** | **132** | **79** | **14** | **225** |
+| **total** | **132** | **79** | **50** | **261** |
 
 ### Difficulty, channel, and message-kind coverage
 
-Full committed corpus:
+Full validated corpus in this workspace:
 
 | field | values |
 |---|---|
-| `difficulty` | `hard` 97, `medium` 70, `easy` 58 |
-| `channel` | `email` 156, `linkedin_dm` 60, `sms` 9 |
-| `message_kind` | `warm_reply` 91, `cold_outreach` 75, `reengagement` 59 |
+| `difficulty` | `hard` 132, `medium` 71, `easy` 58 |
+| `channel` | `email` 182, `linkedin_dm` 70, `sms` 9 |
+| `message_kind` | `warm_reply` 110, `cold_outreach` 92, `reengagement` 59 |
 
 **Microscopic schema detail.** Every task is a JSON object validated against `schema.json` and
 includes the following required top-level fields:
@@ -206,8 +207,8 @@ grounding, and next-step quality.
 - The corpus is authored and reconstructed, not sampled from a production outreach stream.
 - Synthetic coverage is intentionally limited and still far below the full target mix.
 - SMS coverage is thin.
-- The held-out split exists and is useful, but it is still below the long-term target size for a
-  larger ablation program.
+- The held-out split now meets the 50-task target, but the human reliability workflow is still
+  incomplete.
 
 ## 6. Distribution
 
@@ -220,8 +221,8 @@ grounding, and next-step quality.
 `*_prompt_manifest.jsonl` files are generation artifacts, not benchmark rows.
 
 **Access policy.** `train` and `dev` are the intended sharable benchmark surfaces. `held_out` is
-committed in this repo for project continuity but must stay sealed from training and public scoring
-claims.
+maintained locally in this workspace and remains gitignored by repo policy; it must stay sealed
+from training and public scoring claims.
 
 **License.** Apache 2.0, matching the repo posture stated in project documentation.
 
@@ -246,8 +247,8 @@ Changes to the benchmark should preserve:
 - `sms` coverage is 9 tasks, which under-represents that channel.
 - `hand_authored` coverage is concentrated in `train` and `held_out`; `dev` currently has no
   hand-authored rows.
-- The held-out split has 14 tasks, not the larger 50-task evaluation target discussed in planning
-  docs.
+- The human reliability workflow in `docs/inter_rater_agreement.md` is still pending, so the
+  benchmark is sealed and contamination-checked but not yet fully human-calibrated.
 
 ### Version notes
 
@@ -255,3 +256,5 @@ Changes to the benchmark should preserve:
 - `v0.1-wave2`: corpus expanded to the 200-task planning threshold for `train` + `dev`.
 - `v0.1-wave4`: 211 public authoring rows plus 14 sealed held-out rows, with live synthetic
   generation accepted into `train` and `dev`.
+- `v0.1-act2-hardening`: 211 public authoring rows plus 50 sealed held-out rows, with preference
+  prep hardened so held-out rows are not indexed by training utilities.

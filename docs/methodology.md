@@ -119,9 +119,9 @@ specificity score is at least 4/5.
 | `held_out/` | 20% | ~50 tasks | Sealed evaluation only |
 
 Held-out is sealed only after contamination checks pass. In the current repo snapshot, the
-14-row held-out slice is committed for continuity and contamination auditing, but it remains
-off-limits for training and should be treated as directional evaluation surface rather than a
-full ablation-grade benchmark until it is expanded toward the 50-task target.
+50-row held-out slice is committed for continuity and contamination auditing, and it remains
+off-limits for training. The split size is now ablation-ready, but human agreement work is still
+pending, so "sealed" should not be read as "fully human-calibrated."
 
 Delta A is tested on the paired held-out set with McNemar's test for binary pass/fail and a
 paired bootstrap 95% CI over task-level score deltas. With n=50, a 10 percentage point lift is
@@ -129,9 +129,10 @@ reported as directional unless its paired CI clears zero; the target minimum det
 approximately 20-25 percentage points at alpha=0.05 under conservative discordance assumptions,
 assuming roughly 30% discordant pairs.
 
-With the current committed `held_out` count of 14, any adapter-vs-baseline comparison should be
-framed as a smoke or directional result only. It is still useful for early regression checks, but
-not strong enough for confident ablation claims.
+With the current local `held_out` count of 50, adapter-vs-baseline comparisons can use the
+intended paired evaluation surface. The remaining caveat is not sample size but calibration:
+human second-pass and inter-rater agreement are still pending before stronger qualitative claims
+should be made about judge-aligned labeling fidelity.
 
 ---
 
@@ -161,14 +162,14 @@ honest scaffolding states, not evidence that semantic decontamination is fully c
 ### Current Contamination Results
 
 The latest committed contamination report is an embedding-backed pass over the full current corpus.
-It checked `132` train rows, `79` dev rows, and `14` held-out rows against `17` seed held-out trace
+It checked `132` train rows, `79` dev rows, and `50` held-out rows against `17` seed held-out trace
 IDs. The result was `pass=true` with:
 
 - `0` overlap findings from the 8-gram, lexical-cosine, and embedding-cosine comparison pass,
 - `0` time-shift provenance findings,
 - `0` source-trace leakage findings.
 
-That means the current committed `held_out` split is clean against the present `train` and `dev`
+That means the current local `held_out` split is clean against the present `train` and `dev`
 surfaces under all three contamination checks. No active rows required rewriting or removal in the
 current pass. The relevant output is persisted in `src/generation/contamination_check.json`, where
 `embedding_check_status=embedding_check_completed` confirms that this was not merely a lexical-only
@@ -321,19 +322,30 @@ datasheet and public artifacts.
 5. **trace_derived**: no task may cite a `source_trace_id` found in `seed/held_out_traces.jsonl`
    (enforced by `assert_no_held_out_leakage`).
 
-### Current vs. target gap (as of Apr 30 2026, Wave 4)
+### Current vs. target gap (as of Apr 30 2026, final Act II hardening)
 
 | partition | current | original target | gap |
 |---|---|---|---|
 | train | 132 | 125 | +7 |
 | dev | 79 | 75 | +4 |
-| held_out | 14 (partial) | 50 | −36 |
-| **total (train + dev)** | **211** | **200** | **+11** |
+| held_out | 50 | 50 | 0 |
+| **total** | **261** | **250** | **+11** |
 
-Train and dev are above their original targets due to Wave 4 synthetic generation (11 tasks
-added). held_out expanded from 4 to 14 hand_authored tasks; 36 more needed for full ablation.
-Synthetic mode reached 11/100 tasks (Qwen3-Next-80B generator, DeepSeek V3.2 judge, R2
-compliant). Remaining synthetic tasks scheduled for continued Wave 4 generation.
+Train and dev remain above their original planning targets due to the earlier Wave 4 synthetic
+generation. held_out now meets the 50-task target through additional hand-authored adversarial
+coverage, with emphasis on `gap_condescension`, `ai_maturity_consistency`, `signal_grounding`,
+and `next_step_quality`. Synthetic mode remains at 11 tasks, so source-mode balance is still not
+at the original 25% synthetic aspiration.
+
+### Realized counts snapshot
+
+| field | values |
+|---|---|
+| `partition` | `train` 132, `dev` 79, `held_out` 50 |
+| `source_mode` | `programmatic` 123, `trace_derived` 60, `hand_authored` 67, `synthetic` 11 |
+| `failure_dimension` | `gap_condescension` 51, `ai_maturity_consistency` 51, `signal_grounding` 44, `style_guide_adherence` 41, `output_validity` 38, `next_step_quality` 36 |
+| `difficulty` | `hard` 132, `medium` 71, `easy` 58 |
+| `channel` | `email` 182, `linkedin_dm` 70, `sms` 9 |
 
 ---
 
