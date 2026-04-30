@@ -99,6 +99,17 @@ class PrepareOrpoDataTests(unittest.TestCase):
                 chosen_rewrite_judge_model="deepseek/deepseek-chat",
             )
 
+    def test_prepare_preference_record_rejects_identical_chosen_and_rejected(self) -> None:
+        record = make_record()
+        record["rejected"] = record["chosen"]
+        with self.assertRaisesRegex(ValueError, "identical chosen and rejected"):
+            prepare_preference_record(
+                record,
+                task_index=index_dataset_tasks(self.dataset_root),
+                chosen_rewrite_model="qwen/qwen3-next-80b-a3b-instruct",
+                chosen_rewrite_judge_model="deepseek/deepseek-chat",
+            )
+
     def test_prepare_preference_record_rejects_held_out_source_partition(self) -> None:
         record = make_record()
         record["source_task_id"] = "held-task-001"

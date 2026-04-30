@@ -4,6 +4,33 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-04-30 - Act III preference-pair prep: public-only ORPO corpus and sealed-policy doc guard
+
+**Completed:** Added public-only ORPO preference-pair preparation and tightened the Act II
+documentation so the sealed held-out policy is stated consistently before training work begins.
+
+**Changes:**
+
+- `README.md`, `docs/datasheet.md`, `docs/methodology.md`, and `docs/progress.md`: Clarified the
+  final validated counts (`train=132`, `dev=79`, `held_out=50`, `total=261`), reaffirmed that
+  `held_out` is local, sealed, and gitignored, stated that the committed repo contains the
+  generators/tests/docs/contamination report but not the held-out rows, and kept the human
+  second-pass plus second-labeler work marked as pending.
+- `src/training/build_orpo_preferences.py`: Added a public-only ORPO builder that reads only
+  `train/` and `dev/`, converts benchmark candidate outputs into `chosen`, and creates auditable
+  local rejected variants for `rejected`.
+- `src/training/validate_orpo_preferences.py`: Added final-file validation for required fields,
+  non-empty prompt/chosen/rejected text, `chosen != rejected`, and held-out exclusion.
+- `src/training/prepare_orpo_data.py`: Hardened record validation so identical chosen/rejected or
+  empty prompt text is rejected before preparation.
+- `tests/test_build_orpo_preferences.py` and `tests/test_prepare_orpo_data.py`: Added regression
+  coverage for public-only task loading, seed-field validation, held-out rejection, and
+  chosen-versus-rejected distinctness.
+
+**Status:** `training_data/orpo_preferences.jsonl` is prepared from public rows only. Held-out
+remains excluded. Human agreement second pass and second-labeler review are still pending, so Act
+III data prep is ready but benchmark calibration is not yet fully closed.
+
 ## 2026-04-30 - Final Act II hardening checkpoint: held_out 50, validation rerun, docs frozen
 
 **Completed:** Closed the held-out size gap, tightened sealed-split handling in training prep, and

@@ -139,6 +139,16 @@ def prepare_preference_record(
     missing = [field for field in PREFERENCE_REQUIRED_FIELDS if not record.get(field)]
     if missing:
         raise ValueError(f"Preference record missing required field(s): {', '.join(missing)}")
+    for field in ("prompt", "chosen", "rejected"):
+        value = record.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(
+                f"Preference record {record.get('id', '<unknown>')} has empty required text field {field}."
+            )
+    if record.get("chosen") == record.get("rejected"):
+        raise ValueError(
+            f"Preference record {record.get('id', '<unknown>')} has identical chosen and rejected outputs."
+        )
 
     prepared = deepcopy(record)
     metadata = prepared.setdefault("metadata", {})

@@ -119,9 +119,11 @@ specificity score is at least 4/5.
 | `held_out/` | 20% | ~50 tasks | Sealed evaluation only |
 
 Held-out is sealed only after contamination checks pass. In the current repo snapshot, the
-50-row held-out slice is committed for continuity and contamination auditing, and it remains
-off-limits for training. The split size is now ablation-ready, but human agreement work is still
-pending, so "sealed" should not be read as "fully human-calibrated."
+50-row held-out slice exists locally for continuity and contamination auditing, but the rows
+themselves remain gitignored and unversioned. The committed repo includes the held-out generators,
+tests, documentation, and contamination report; it does not include the sealed held-out rows.
+Held-out remains off-limits for training. The split size is now ablation-ready, but human
+agreement work is still pending, so "sealed" should not be read as "fully human-calibrated."
 
 Delta A is tested on the paired held-out set with McNemar's test for binary pass/fail and a
 paired bootstrap 95% CI over task-level score deltas. With n=50, a 10 percentage point lift is

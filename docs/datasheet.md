@@ -37,6 +37,8 @@ to `cost/log.csv`.
 The held-out split now reaches the 50-task target and passes the contamination gate, but human
 agreement work is still pending, so the corpus should not yet be described as fully
 human-calibrated.
+The committed repo includes the generator code, tests, documentation, and contamination report for
+that sealed split, but the 50 held-out task rows themselves remain local and gitignored.
 
 ### Partition counts
 
@@ -216,13 +218,13 @@ grounding, and next-step quality.
 
 - `tenacious_bench_v0.1/train/*.jsonl`
 - `tenacious_bench_v0.1/dev/*.jsonl`
-- `tenacious_bench_v0.1/held_out/*.jsonl`
+- local sealed `tenacious_bench_v0.1/held_out/*.jsonl` (not versioned in git)
 
 `*_prompt_manifest.jsonl` files are generation artifacts, not benchmark rows.
 
 **Access policy.** `train` and `dev` are the intended sharable benchmark surfaces. `held_out` is
-maintained locally in this workspace and remains gitignored by repo policy; it must stay sealed
-from training and public scoring claims.
+maintained locally in this workspace, remains gitignored by repo policy, and is not versioned in
+git. It must stay sealed from training and public scoring claims.
 
 **License.** Apache 2.0, matching the repo posture stated in project documentation.
 

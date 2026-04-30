@@ -14,7 +14,9 @@ seed stamping, and duplicate filtering.
 
 The local `held_out/` slice now reaches the 50-task target and passes the contamination gate. It
 remains gitignored and sealed from training use, and `src/training/prepare_orpo_data.py` now
-indexes only `train/` and `dev/` when preparing preference data.
+indexes only `train/` and `dev/` when preparing preference data. The committed repo includes the
+held-out generators, tests, documentation, and contamination report, but not the held-out task rows
+themselves.
 
 ## Current counts
 
@@ -72,7 +74,7 @@ bootstrap that cache, then rerun contamination to get a true embedding-backed pa
 
 | Path | Purpose |
 |---|---|
-| `tenacious_bench_v0.1/` | Dataset partitions (`train/`, `dev/`, `held_out/`) and `smoke/` fixtures |
+| `tenacious_bench_v0.1/` | Public dataset partitions (`train/`, `dev/`), local sealed `held_out/`, and `smoke/` fixtures |
 | `seed/` | Read-only Week 10 inputs (traces, probes, taxonomy) |
 | `src/generation/` | Authoring pipeline (trace-derived, programmatic, hand-authored, synthesis, contamination) |
 | `src/scoring/` | Machine-verifiable scoring evaluator |
@@ -95,7 +97,8 @@ bootstrap that cache, then rerun contamination to get a true embedding-backed pa
 ## Forward plan
 
 The current repo is strong enough for audit, scoring, controlled synthesis work, and a sealed
-held-out evaluation pass. The next two steps remain:
+held-out evaluation pass. The human-reliability caveat remains explicit: second-pass and
+second-labeler agreement are still pending. The next two steps remain:
 
 1. Convert the accepted benchmark rows into a richer ORPO preference corpus with explicit
    chosen/rejected pairs, then run the first end-to-end Unsloth smoke training pass.
