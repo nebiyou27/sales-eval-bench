@@ -31,7 +31,19 @@ DETERMINISTIC_CHECKS = (
 )
 
 CTA_PATTERN = re.compile(
-    r"\b(schedule|book|call|demo|meet|meeting|reply|send|share|next step|talk)\b",
+    r"\b(schedule|book|call|demo|meet|meeting|reply|send|share|next step|talk|confirm|review|get back)\b",
+    re.IGNORECASE,
+)
+BUNDLED_ASK_PATTERN = re.compile(
+    r"(?:\b(can you|could you|would you|please)\b[^.!?]{0,30})?"
+    r"\b(schedule|book|meet|reply|send|share|confirm|review|get back)\b"
+    r"[^.!?]{0,120}\b(and|then|also)\b[^.!?]{0,40}"
+    r"\b(schedule|book|meet|reply|send|share|confirm|review|get back)\b",
+    re.IGNORECASE,
+)
+REQUEST_LEAD_PATTERN = re.compile(r"\b(can you|could you|would you|please)\b", re.IGNORECASE)
+IMPERATIVE_REQUEST_PATTERN = re.compile(
+    r"^(reply|send|share|book|schedule|meet|confirm|review|get back)\b",
     re.IGNORECASE,
 )
 CONDESCENSION_PATTERN = re.compile(
@@ -93,6 +105,22 @@ def candidate_body(candidate: Any) -> str:
     return candidate_text(candidate)
 
 
+def has_bundled_ask(body: str) -> bool:
+    sentences = re.split(r"(?<=[.!?])\s+", body)
+    return any(BUNDLED_ASK_PATTERN.search(sentence) for sentence in sentences)
+
+
+def ask_sentence_count(body: str) -> int:
+    count = 0
+    for sentence in re.split(r"(?<=[.!?])\s+", body):
+        stripped = sentence.strip()
+        if not stripped:
+            continue
+        if REQUEST_LEAD_PATTERN.search(stripped) or IMPERATIVE_REQUEST_PATTERN.search(stripped):
+            count += 1
+    return count
+
+
 def score_candidate(task: dict[str, Any], candidate: Any) -> ScoreResult:
     text = candidate_text(candidate)
     body = candidate_body(candidate)
@@ -106,9 +134,7 @@ def score_candidate(task: dict[str, Any], candidate: Any) -> ScoreResult:
     body_words = len(re.findall(r"\S+", body))
     max_body_words = rubric.get("max_body_words")
     max_subject_chars = rubric.get("max_subject_chars")
-    cta_sentences = [
-        sentence for sentence in re.split(r"(?<=[.!?])\s+", text) if CTA_PATTERN.search(sentence)
-    ]
+    ask_sentences = ask_sentence_count(body)
 
     scores = {
         "output_nonempty": 1.0 if text.strip() else 0.0,
@@ -135,8 +161,8 @@ def score_candidate(task: dict[str, Any], candidate: Any) -> ScoreResult:
         "forbidden_terms_absent": 0.0
         if any(term in lower_text for term in forbidden_terms)
         else 1.0,
-        "buyer_next_step_keyword_present": 1.0 if CTA_PATTERN.search(text) else 0.0,
-        "single_ask_only": 1.0 if len(cta_sentences) <= 1 else 0.0,
+        "buyer_next_step_keyword_present": 1.0 if CTA_PATTERN.search(body) else 0.0,
+        "single_ask_only": 1.0 if ask_sentences <= 1 and not has_bundled_ask(body) else 0.0,
     }
     deterministic_dimensions = task.get("scoring_config", {}).get(
         "deterministic_dimensions", DETERMINISTIC_CHECKS
@@ -231,6 +257,23 @@ def smoke_tasks() -> list[tuple[dict[str, Any], str, bool]]:
                 },
             },
             {"subject": "Re: CRM note", "body": ""},
+            False,
+        ),
+        (
+            {
+                "channel": "email",
+                "rubric": {
+                    "expected_terms": ["demo"],
+                    "forbidden_terms": [],
+                    "banned_phrases": [],
+                    "max_body_words": 120,
+                    "max_subject_chars": 60,
+                },
+            },
+            {
+                "subject": "Question: demo timing",
+                "body": "Book a demo and reply with a time that works this week.",
+            },
             False,
         ),
     ]

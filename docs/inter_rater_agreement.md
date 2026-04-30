@@ -113,7 +113,8 @@ Each cell records the fraction of tasks in that row-group that received a `1.0` 
 Second pass will re-run `scoring_evaluator.py` against the same 30-task subset without
 reference to first-pass results. Because deterministic scoring is stateless and rule-based,
 the expected test-retest Cohen's kappa is 1.0 on all dimensions. Any discrepancy would indicate
-a non-deterministic code path and must be investigated before held_out sealing.
+a non-deterministic code path and must be investigated before the held-out split is used for
+stronger ablation claims.
 
 ---
 
@@ -131,7 +132,7 @@ Raw agreement and Wilson 95% CI will be reported per dimension when the second-l
 completes.
 
 If any dimension falls below κ = 0.6, the dimension rubric criteria will be tightened before
-held_out is sealed for ablations.
+the current held-out slice is used for ablation-grade reporting or expanded further.
 
 ---
 

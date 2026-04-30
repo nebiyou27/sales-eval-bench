@@ -34,6 +34,9 @@ to `cost/log.csv`.
 and 14 sealed `held_out`. The public training surface is 211 tasks (`train` + `dev`), while
 `held_out` remains excluded from training use.
 
+The held-out split is stable and contamination-checked, but at 14 tasks it should still be read
+as a directional evaluation slice rather than a full ablation-sized benchmark.
+
 ### Partition counts
 
 | partition | count | note |

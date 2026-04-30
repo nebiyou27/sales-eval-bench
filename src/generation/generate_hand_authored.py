@@ -2611,6 +2611,679 @@ HAND_AUTHORED_SPECS: list[dict[str, Any]] = [
 ]
 
 
+def _deterministic_dimensions_for(channel: str, include_ai_keyword: bool) -> list[str]:
+    dimensions = ["output_nonempty"]
+    if channel == "email":
+        dimensions.extend(["subject_present_for_email", "max_body_words_respected", "max_subject_chars_respected"])
+    else:
+        dimensions.append("max_body_words_respected")
+    if include_ai_keyword:
+        dimensions.append("ai_maturity_keyword_present")
+    dimensions.extend(
+        [
+            "banned_phrase_absent",
+            "bench_term_absent",
+            "banned_condescension_absent",
+            "expected_signal_term_present",
+            "forbidden_terms_absent",
+            "buyer_next_step_keyword_present",
+            "single_ask_only",
+        ]
+    )
+    return dimensions
+
+
+def _held_out_extension_spec(
+    *,
+    suffix: str,
+    difficulty: str,
+    failure_dimension: str,
+    channel: str,
+    message_kind: str,
+    prospect: dict[str, str],
+    signal: dict[str, str],
+    ai_maturity: dict[str, Any],
+    bench_context: dict[str, Any],
+    prior_thread: dict[str, Any],
+    candidate_output: dict[str, str],
+    expected_behavior: str,
+    failure_rationale: str,
+    expected_terms: list[str],
+    forbidden_terms: list[str],
+    banned_phrases: list[str],
+    max_body_words: int,
+    judge_dimensions: list[str],
+    probe_id: str,
+    authoring_note: str,
+    include_ai_keyword: bool = False,
+) -> dict[str, Any]:
+    rubric: dict[str, Any] = {
+        "tone_markers": ["direct", "grounded", "honest", "professional"],
+        "expected_terms": expected_terms,
+        "forbidden_terms": forbidden_terms,
+        "banned_phrases": banned_phrases,
+        "max_body_words": max_body_words,
+        "one_ask_required": True,
+        "require_signal_reference": True,
+        "confidence_aware_language": True,
+        "forbid_bench_term": True,
+        "allowed_channels": [channel],
+    }
+    if channel == "email":
+        rubric["max_subject_chars"] = 60
+    return {
+        "partition": "held_out",
+        "suffix": suffix,
+        "difficulty": difficulty,
+        "failure_dimension": failure_dimension,
+        "channel": channel,
+        "message_kind": message_kind,
+        "input": {
+            "prospect": prospect,
+            "hiring_signal_brief": {
+                "primary_segment": signal["primary_segment"],
+                "signal_confidence": signal["signal_confidence"],
+                "signals": [
+                    {
+                        "signal_type": signal["signal_type"],
+                        "evidence": signal["evidence"],
+                        "confidence": signal["confidence"],
+                        "source_ref": signal["source_ref"],
+                    }
+                ],
+                "ai_maturity": ai_maturity,
+            },
+            "bench_context": bench_context,
+            "prior_thread": prior_thread,
+        },
+        "candidate_output": candidate_output,
+        "ground_truth": {
+            "expected_behavior": expected_behavior,
+            "target_decision": "accept",
+            "failure_rationale": failure_rationale,
+        },
+        "rubric": rubric,
+        "scoring_config": {
+            "deterministic_dimensions": _deterministic_dimensions_for(channel, include_ai_keyword),
+            "judge_dimensions": judge_dimensions,
+        },
+        "metadata": {
+            "probe_id": probe_id,
+            "source_artifact": "seed/probe_library.md",
+            "style_guide_version": "v2",
+            "authoring_note": authoring_note,
+        },
+    }
+
+
+def _additional_held_out_specs() -> list[dict[str, Any]]:
+    return [
+        _held_out_extension_spec(
+            suffix="gap-condescension-procurement-board",
+            difficulty="hard",
+            failure_dimension="gap_condescension",
+            channel="email",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Aperture Freight", "contact_role": "Head of Procurement", "company_stage": "enterprise"},
+            signal={
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "low",
+                "signal_type": "competitor_gap",
+                "evidence": "A procurement review memo says outside vendors must quantify fit before implying an operations gap to the evaluation board.",
+                "confidence": "low",
+                "source_ref": "seed/probe_library.md#P33",
+            },
+            ai_maturity={"score": 1, "confidence": "low"},
+            bench_context={"supported_stacks": ["python", "ops", "data"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "subject": "Question on evaluation-board fit",
+                "body": (
+                    "Hi Elena, your procurement note makes it clear that any workflow hypothesis needs evidence before it turns into a diagnosis. "
+                    "Can you share which operations handoff is most worth understanding first if outside capacity is relevant at all?"
+                ),
+            },
+            expected_behavior="Respect the procurement review standard and keep the gap framing explicitly conditional.",
+            failure_rationale="Turning a procurement memo into a confident deficiency claim is a gap-condescension failure.",
+            expected_terms=["procurement", "operations"],
+            forbidden_terms=["clear gap", "you are behind", "obvious weakness"],
+            banned_phrases=["world-class", "quick chat", "must fix now"],
+            max_body_words=120,
+            judge_dimensions=["gap_condescension", "signal_grounding", "next_step_quality"],
+            probe_id="P33",
+            authoring_note="Held-out extension: procurement review board requires fit evidence before any gap claim.",
+        ),
+        _held_out_extension_spec(
+            suffix="gap-condescension-platform-veteran",
+            difficulty="hard",
+            failure_dimension="gap_condescension",
+            channel="linkedin_dm",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Orbit Ledger", "contact_role": "VP Platform", "company_stage": "growth"},
+            signal={
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "medium",
+                "signal_type": "competitor_gap",
+                "evidence": "The VP Platform previously led reliability engineering at two larger firms, so a slower hiring signal is not evidence of a neglected platform backlog.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P33",
+            },
+            ai_maturity={"score": 2, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "infra", "data"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "body": (
+                    "Hi Marcus, your platform background suggests the quieter hiring pattern may be intentional rather than a missed capability area. "
+                    "Can you share whether any reliability workflow is actually under pressure before I assume the wrong fit?"
+                ),
+            },
+            expected_behavior="Treat the platform leader's background as a reason to stay exploratory, not corrective.",
+            failure_rationale="Presuming a veteran platform leader overlooked a reliability gap is condescending.",
+            expected_terms=["platform", "reliability"],
+            forbidden_terms=["you need to catch up", "still immature", "basic platform gap"],
+            banned_phrases=["world-class", "quick chat", "easy win"],
+            max_body_words=120,
+            judge_dimensions=["gap_condescension", "signal_grounding", "next_step_quality"],
+            probe_id="P33",
+            authoring_note="Held-out extension: experienced platform buyer must not be spoken to as if the gap is obvious.",
+        ),
+        _held_out_extension_spec(
+            suffix="gap-condescension-post-merger-it",
+            difficulty="hard",
+            failure_dimension="gap_condescension",
+            channel="email",
+            message_kind="warm_reply",
+            prospect={"company_name": "Cobalt Retail Group", "contact_role": "Interim CIO", "company_stage": "mid_market"},
+            signal={
+                "primary_segment": "segment_3_leadership_transition",
+                "signal_confidence": "medium",
+                "signal_type": "leadership_change",
+                "evidence": "An interim CIO is managing a post-merger systems review, which signals active decision-making rather than a neglected integration gap.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P33",
+            },
+            ai_maturity={"score": 1, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "data", "retail"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": True, "summary": "The interim CIO replied asking us not to assume the merger automatically created a systems failure."},
+            candidate_output={
+                "subject": "Re: post-merger systems review",
+                "body": (
+                    "Hi Nina, a merger review can point to several integration paths, so I do not want to label it as a systems failure from the outside. "
+                    "Can you share which review area is still unresolved enough to merit external capacity, if any?"
+                ),
+            },
+            expected_behavior="Acknowledge the merger context without converting it into a confident deficit claim.",
+            failure_rationale="Assuming the interim CIO has not already triaged the integration work is a gap-condescension error.",
+            expected_terms=["review", "integration"],
+            forbidden_terms=["obvious merger problem", "clearly broken", "you have not solved"],
+            banned_phrases=["world-class", "quick chat", "pain point"],
+            max_body_words=200,
+            judge_dimensions=["gap_condescension", "signal_grounding", "next_step_quality"],
+            probe_id="P33",
+            authoring_note="Held-out extension: merger review should stay conditional and respectful of active CIO judgment.",
+        ),
+        _held_out_extension_spec(
+            suffix="gap-condescension-research-led-cto",
+            difficulty="hard",
+            failure_dimension="gap_condescension",
+            channel="email",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Ion Harbor Bio", "contact_role": "CTO", "company_stage": "growth"},
+            signal={
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "low",
+                "signal_type": "competitor_gap",
+                "evidence": "The CTO published a note explaining why the team intentionally keeps one research workflow manual for auditability, despite peers automating it.",
+                "confidence": "low",
+                "source_ref": "seed/probe_library.md#P33",
+            },
+            ai_maturity={"score": 2, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "ml", "biotech"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "subject": "Question on auditability-first workflow",
+                "body": (
+                    "Hi Farah, your auditability note reads like a deliberate design choice rather than a workflow oversight. "
+                    "Can you share whether there is any research step where outside capacity would help without undoing that manual control?"
+                ),
+            },
+            expected_behavior="Treat manual workflow as intentional until the buyer says otherwise.",
+            failure_rationale="Telling a research-led CTO that peers have already solved the workflow is presumptuous and disrespectful.",
+            expected_terms=["auditability", "workflow"],
+            forbidden_terms=["your peers solved this", "manual gap", "you should automate now"],
+            banned_phrases=["world-class", "quick chat", "low-hanging fruit"],
+            max_body_words=120,
+            judge_dimensions=["gap_condescension", "signal_grounding", "next_step_quality"],
+            probe_id="P33",
+            authoring_note="Held-out extension: research-led CTO explicitly chose manual control, so peer framing must stay non-prescriptive.",
+        ),
+        _held_out_extension_spec(
+            suffix="ai-maturity-score-3-restraint",
+            difficulty="hard",
+            failure_dimension="ai_maturity_consistency",
+            channel="email",
+            message_kind="warm_reply",
+            prospect={"company_name": "Northline Compute", "contact_role": "Head of ML Platform", "company_stage": "growth"},
+            signal={
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "high",
+                "signal_type": "ai_maturity",
+                "evidence": "The platform team already runs monitored production inference, model governance reviews, and rollback playbooks, which indicates a high-maturity ML workflow.",
+                "confidence": "high",
+                "source_ref": "seed/probe_library.md#P25",
+            },
+            ai_maturity={"score": 3, "confidence": "high"},
+            bench_context={"supported_stacks": ["python", "ml", "infra"], "capacity_commitment_allowed": False, "pricing_scope": "route_specific_quote_to_human"},
+            prior_thread={"contacted_before": True, "summary": "The ML platform lead asked how we would describe fit without flattening a mature AI workflow into generic scale language."},
+            candidate_output={
+                "subject": "Re: mature AI workflow fit",
+                "body": (
+                    "Hi Teresa, with an AI workflow that already includes governance and rollback discipline, I would rather keep the conversation narrow than imply a broad maturity gap. "
+                    "Can you share which platform step still becomes operationally expensive at your current maturity level?"
+                ),
+            },
+            expected_behavior="At score 3, narrow the question to specific operational cost rather than broad maturity uplift.",
+            failure_rationale="Treating a high-maturity ML platform like an early automation project breaks ai_maturity consistency.",
+            expected_terms=["AI", "maturity"],
+            forbidden_terms=["beginning your AI journey", "early-stage AI", "basic automation"],
+            banned_phrases=["world-class", "quick chat", "unlock AI fast"],
+            max_body_words=200,
+            judge_dimensions=["ai_maturity_consistency", "signal_grounding", "next_step_quality"],
+            probe_id="P25",
+            authoring_note="Held-out extension: score-3 AI posture must be framed as mature and narrow, not introductory.",
+            include_ai_keyword=True,
+        ),
+        _held_out_extension_spec(
+            suffix="ai-maturity-shadow-pilot-low-confidence",
+            difficulty="hard",
+            failure_dimension="ai_maturity_consistency",
+            channel="email",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Granary Legal Tech", "contact_role": "COO", "company_stage": "series_b"},
+            signal={
+                "primary_segment": "segment_2_restructuring_cost",
+                "signal_confidence": "low",
+                "signal_type": "ai_maturity",
+                "evidence": "One employee podcast casually mentions an internal summarization pilot, but no public workflow or hiring evidence confirms that the pilot still exists.",
+                "confidence": "low",
+                "source_ref": "seed/probe_library.md#P24",
+            },
+            ai_maturity={"score": 1, "confidence": "low"},
+            bench_context={"supported_stacks": ["python", "ops", "legal"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "subject": "Question on automation posture",
+                "body": (
+                    "Hi Victor, I only have a weak signal that an automation pilot may have existed, so I would not want to overstate your current AI workflow. "
+                    "Can you share whether any summarization process is still active enough to create a real operations question?"
+                ),
+            },
+            expected_behavior="Keep the maturity read at exploratory score-1 language when the pilot signal is weak and stale.",
+            failure_rationale="Converting an old podcast mention into a confident automation narrative is an ai_maturity consistency failure.",
+            expected_terms=["automation", "workflow"],
+            forbidden_terms=["active AI rollout", "your AI program", "production summarization"],
+            banned_phrases=["world-class", "quick chat", "transform operations"],
+            max_body_words=120,
+            judge_dimensions=["ai_maturity_consistency", "signal_grounding", "next_step_quality"],
+            probe_id="P24",
+            authoring_note="Held-out extension: stale shadow-pilot mention should not be framed as a live AI program.",
+            include_ai_keyword=True,
+        ),
+        _held_out_extension_spec(
+            suffix="ai-maturity-bi-not-ml",
+            difficulty="hard",
+            failure_dimension="ai_maturity_consistency",
+            channel="email",
+            message_kind="warm_reply",
+            prospect={"company_name": "Lattice Finance Ops", "contact_role": "VP Analytics", "company_stage": "mid_market"},
+            signal={
+                "primary_segment": "segment_1_recently_funded",
+                "signal_confidence": "medium",
+                "signal_type": "ai_maturity",
+                "evidence": "The team has strong BI dashboards and SQL ownership, but there is no evidence of model deployment or production automation beyond reporting.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P24",
+            },
+            ai_maturity={"score": 1, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "data", "finance"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": True, "summary": "The analytics leader asked whether we were equating dashboard maturity with an AI workflow."},
+            candidate_output={
+                "subject": "Re: dashboard maturity vs AI maturity",
+                "body": (
+                    "Hi Owen, dashboard depth does not automatically imply an AI workflow, so I would keep the maturity read conservative until there is evidence beyond reporting. "
+                    "Can you share whether any decision path is already using models or automation outside BI?"
+                ),
+            },
+            expected_behavior="Separate BI sophistication from AI-maturity claims unless model evidence is present.",
+            failure_rationale="Treating strong reporting as proof of AI maturity overstates what the signal supports.",
+            expected_terms=["AI", "dashboard"],
+            forbidden_terms=["clearly advanced AI", "mature model stack", "proven ML workflow"],
+            banned_phrases=["world-class", "quick chat", "AI-native"],
+            max_body_words=200,
+            judge_dimensions=["ai_maturity_consistency", "signal_grounding", "next_step_quality"],
+            probe_id="P24",
+            authoring_note="Held-out extension: BI maturity should not be collapsed into AI maturity.",
+            include_ai_keyword=True,
+        ),
+        _held_out_extension_spec(
+            suffix="ai-maturity-manual-safety-gate",
+            difficulty="hard",
+            failure_dimension="ai_maturity_consistency",
+            channel="linkedin_dm",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Beacon Clinical Ops", "contact_role": "Director of Operations", "company_stage": "growth"},
+            signal={
+                "primary_segment": "segment_3_leadership_transition",
+                "signal_confidence": "low",
+                "signal_type": "ai_maturity",
+                "evidence": "A product note mentions one machine-learning assistive step, but a safety committee update says every output still requires manual signoff before use.",
+                "confidence": "low",
+                "source_ref": "seed/probe_library.md#P24",
+            },
+            ai_maturity={"score": 1, "confidence": "low"},
+            bench_context={"supported_stacks": ["python", "ops", "clinical"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "body": (
+                    "Hi Amina, the machine-learning mention is interesting, but the manual signoff rule suggests the workflow is still tightly controlled rather than broadly automated. "
+                    "Can you share whether that safety gate is the main place where outside capacity would even matter?"
+                ),
+            },
+            expected_behavior="Acknowledge the ML mention but keep the maturity read low because manual signoff still dominates the workflow.",
+            failure_rationale="Treating a tightly gated safety workflow as mature AI adoption is inconsistent with the signal.",
+            expected_terms=["machine-learning", "manual"],
+            forbidden_terms=["fully automated", "high AI maturity", "scaled ML operations"],
+            banned_phrases=["world-class", "quick chat", "AI breakthrough"],
+            max_body_words=120,
+            judge_dimensions=["ai_maturity_consistency", "signal_grounding", "next_step_quality"],
+            probe_id="P24",
+            authoring_note="Held-out extension: manual safety gate keeps AI maturity low despite one ML mention.",
+            include_ai_keyword=True,
+        ),
+        _held_out_extension_spec(
+            suffix="signal-grounding-community-rumor",
+            difficulty="hard",
+            failure_dimension="signal_grounding",
+            channel="email",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Silverline Commerce", "contact_role": "VP Operations", "company_stage": "growth"},
+            signal={
+                "primary_segment": "segment_2_restructuring_cost",
+                "signal_confidence": "low",
+                "signal_type": "job_post_velocity",
+                "evidence": "An operations rumor appears in an industry Slack thread, but there is no public filing or company signal confirming that a fulfillment restructure is happening.",
+                "confidence": "low",
+                "source_ref": "seed/probe_library.md#P03",
+            },
+            ai_maturity={"score": 1, "confidence": "low"},
+            bench_context={"supported_stacks": ["python", "ops", "commerce"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "subject": "Question on fulfillment workflow",
+                "body": (
+                    "Hi Jules, I have only seen an unverified operations rumor, so I would rather not treat a fulfillment restructure as a fact. "
+                    "Can you share whether any workflow bottleneck is actually prompting outside resourcing discussion?"
+                ),
+            },
+            expected_behavior="Name the rumor as unverified and pivot to a factual question instead of repeating it as evidence.",
+            failure_rationale="Converting community rumor into a confident operations narrative is a signal-grounding failure.",
+            expected_terms=["unverified", "workflow"],
+            forbidden_terms=["I saw your restructure", "confirmed restructure", "as announced"],
+            banned_phrases=["world-class", "quick chat", "breaking news"],
+            max_body_words=120,
+            judge_dimensions=["signal_grounding", "style_guide_adherence", "next_step_quality"],
+            probe_id="P03",
+            authoring_note="Held-out extension: community rumor must stay explicitly unverified.",
+        ),
+        _held_out_extension_spec(
+            suffix="signal-grounding-sponsored-podcast",
+            difficulty="hard",
+            failure_dimension="signal_grounding",
+            channel="linkedin_dm",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Harborline Energy", "contact_role": "Director of RevOps", "company_stage": "mid_market"},
+            signal={
+                "primary_segment": "segment_4_capability_gap",
+                "signal_confidence": "low",
+                "signal_type": "prior_thread",
+                "evidence": "The prospect's company sponsored a RevOps podcast episode, but sponsorship alone does not confirm an active tooling initiative or buying motion.",
+                "confidence": "low",
+                "source_ref": "seed/probe_library.md#P05",
+            },
+            ai_maturity={"score": 1, "confidence": "low"},
+            bench_context={"supported_stacks": ["python", "data", "revops"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "body": (
+                    "Hi Renee, sponsoring a RevOps episode could mean brand support, hiring support, or nothing operational at all, so I would rather not infer a tooling program from it. "
+                    "Can you share whether any revenue workflow is actually under review right now?"
+                ),
+            },
+            expected_behavior="Treat sponsorship as weak signal and keep the question open instead of promotional.",
+            failure_rationale="Reading a sponsorship line as proof of workflow change is poor signal grounding.",
+            expected_terms=["revenue", "workflow"],
+            forbidden_terms=["you are clearly evaluating", "your tooling initiative", "obvious revops push"],
+            banned_phrases=["world-class", "quick chat", "transform revops"],
+            max_body_words=120,
+            judge_dimensions=["signal_grounding", "style_guide_adherence", "next_step_quality"],
+            probe_id="P05",
+            authoring_note="Held-out extension: podcast sponsorship should not be promoted into buying intent.",
+        ),
+        _held_out_extension_spec(
+            suffix="signal-grounding-reposted-role",
+            difficulty="hard",
+            failure_dimension="signal_grounding",
+            channel="email",
+            message_kind="warm_reply",
+            prospect={"company_name": "Morrow Logistics", "contact_role": "Head of Systems", "company_stage": "mid_market"},
+            signal={
+                "primary_segment": "segment_2_restructuring_cost",
+                "signal_confidence": "medium",
+                "signal_type": "job_post_velocity",
+                "evidence": "A six-month-old integration engineer role was reposted by an agency account, but the repost does not show whether the position is still active or already filled.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P29",
+            },
+            ai_maturity={"score": 1, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "ops", "integration"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": True, "summary": "The systems lead asked whether our earlier note assumed the reposted role was still an active project signal."},
+            candidate_output={
+                "subject": "Re: reposted integration role",
+                "body": (
+                    "Hi Kira, a reposted agency listing is too ambiguous to treat as proof of a live integration initiative. "
+                    "Can you share whether there is a current systems handoff that still warrants outside support?"
+                ),
+            },
+            expected_behavior="Call out the repost ambiguity and avoid treating it as fresh evidence.",
+            failure_rationale="Assuming a reposted role proves current project urgency is a signal-grounding mistake.",
+            expected_terms=["reposted", "integration"],
+            forbidden_terms=["current initiative", "active hiring push", "fresh signal"],
+            banned_phrases=["world-class", "quick chat", "clear urgency"],
+            max_body_words=200,
+            judge_dimensions=["signal_grounding", "style_guide_adherence", "next_step_quality"],
+            probe_id="P29",
+            authoring_note="Held-out extension: agency reposted role must be treated as ambiguous signal.",
+        ),
+        _held_out_extension_spec(
+            suffix="signal-grounding-partner-directory",
+            difficulty="hard",
+            failure_dimension="signal_grounding",
+            channel="email",
+            message_kind="cold_outreach",
+            prospect={"company_name": "Delta Municipal Tech", "contact_role": "Director of Operations", "company_stage": "enterprise"},
+            signal={
+                "primary_segment": "segment_1_recently_funded",
+                "signal_confidence": "low",
+                "signal_type": "prior_thread",
+                "evidence": "A partner directory lists the company next to an automation vendor, but the listing does not indicate whether the relationship is active, historical, or purely marketing.",
+                "confidence": "low",
+                "source_ref": "seed/probe_library.md#P03",
+            },
+            ai_maturity={"score": 1, "confidence": "low"},
+            bench_context={"supported_stacks": ["python", "ops", "public-sector"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": False, "summary": ""},
+            candidate_output={
+                "subject": "Question on automation listing context",
+                "body": (
+                    "Hi Leon, a partner directory entry alone does not tell me whether that automation relationship is current or even operationally meaningful. "
+                    "Can you share whether any municipal workflow is actively being reconsidered before I assume the listing reflects live demand?"
+                ),
+            },
+            expected_behavior="State that the directory signal is ambiguous and ask about live workflow only.",
+            failure_rationale="Treating a directory listing as current operational evidence overstates the signal.",
+            expected_terms=["automation", "workflow"],
+            forbidden_terms=["your current vendor", "active automation program", "live initiative"],
+            banned_phrases=["world-class", "quick chat", "ready-made solution"],
+            max_body_words=120,
+            judge_dimensions=["signal_grounding", "style_guide_adherence", "next_step_quality"],
+            probe_id="P03",
+            authoring_note="Held-out extension: partner directory listing should stay explicitly ambiguous.",
+        ),
+        _held_out_extension_spec(
+            suffix="next-step-two-window-ask",
+            difficulty="hard",
+            failure_dimension="next_step_quality",
+            channel="email",
+            message_kind="warm_reply",
+            prospect={"company_name": "Quarry Transit", "contact_role": "VP Operations", "company_stage": "growth"},
+            signal={
+                "primary_segment": "segment_3_leadership_transition",
+                "signal_confidence": "medium",
+                "signal_type": "prior_thread",
+                "evidence": "The buyer said prior follow-ups kept asking for a meeting without giving a practical response option tied to shift-based availability.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P34",
+            },
+            ai_maturity={"score": 1, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "ops", "data"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": True, "summary": "The VP Operations said the team works around shift windows, so vague meeting asks are hard to act on."},
+            candidate_output={
+                "subject": "Re: shift-friendly follow-up",
+                "body": (
+                    "Hi Laila, rather than ask for an open-ended meeting, I want to keep the next step practical for a shift-based team. "
+                    "Can you reply with the better fit for a follow-up: early-week morning or late-week afternoon?"
+                ),
+            },
+            expected_behavior="Offer a concrete, answerable next step that reduces scheduling effort for the buyer.",
+            failure_rationale="A vague meeting request keeps the burden on the buyer and weakens next-step quality.",
+            expected_terms=["follow-up", "morning"],
+            forbidden_terms=["let me know", "whenever works", "any time is fine"],
+            banned_phrases=["world-class", "quick chat", "touch base"],
+            max_body_words=200,
+            judge_dimensions=["next_step_quality", "signal_grounding", "style_guide_adherence"],
+            probe_id="P34",
+            authoring_note="Held-out extension: next step should present two concrete time windows for a shift-based team.",
+        ),
+        _held_out_extension_spec(
+            suffix="next-step-route-owner",
+            difficulty="hard",
+            failure_dimension="next_step_quality",
+            channel="email",
+            message_kind="warm_reply",
+            prospect={"company_name": "Pillar Insurance Tech", "contact_role": "Chief of Staff", "company_stage": "mid_market"},
+            signal={
+                "primary_segment": "segment_2_restructuring_cost",
+                "signal_confidence": "medium",
+                "signal_type": "prior_thread",
+                "evidence": "The chief of staff said prior outreach was directionally relevant but likely belonged with the claims-ops owner rather than the current inbox.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P19",
+            },
+            ai_maturity={"score": 1, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "ops", "insurance"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": True, "summary": "The chief of staff implied the note may need rerouting to the claims operations owner."},
+            candidate_output={
+                "subject": "Re: best owner for the claims question",
+                "body": (
+                    "Hi Daniel, thanks for clarifying that the claims workflow question may belong with a different owner. "
+                    "Can you share whether I should direct the follow-up to claims operations or keep it with your team?"
+                ),
+            },
+            expected_behavior="Ask for one concrete routing decision instead of repeating the original pitch.",
+            failure_rationale="Repeating the whole ask without resolving ownership creates friction and wastes the reply.",
+            expected_terms=["claims", "follow-up"],
+            forbidden_terms=["just forward this", "whoever handles it", "someone on your side"],
+            banned_phrases=["world-class", "quick chat", "circle back later"],
+            max_body_words=200,
+            judge_dimensions=["next_step_quality", "signal_grounding", "style_guide_adherence"],
+            probe_id="P19",
+            authoring_note="Held-out extension: next step should reduce routing uncertainty to one answerable choice.",
+        ),
+        _held_out_extension_spec(
+            suffix="next-step-pricing-scope-check",
+            difficulty="hard",
+            failure_dimension="next_step_quality",
+            channel="email",
+            message_kind="warm_reply",
+            prospect={"company_name": "Brookline Data Trust", "contact_role": "VP Technology", "company_stage": "series_b"},
+            signal={
+                "primary_segment": "segment_1_recently_funded",
+                "signal_confidence": "medium",
+                "signal_type": "prior_thread",
+                "evidence": "The buyer replied that earlier outreach jumped to pricing before clarifying whether the workflow question was even in scope.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P34",
+            },
+            ai_maturity={"score": 1, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "data", "security"], "capacity_commitment_allowed": False, "pricing_scope": "route_specific_quote_to_human"},
+            prior_thread={"contacted_before": True, "summary": "The technology lead said pricing came too early and asked for a clearer scope check first."},
+            candidate_output={
+                "subject": "Re: scope before pricing",
+                "body": (
+                    "Hi Meera, that is fair: pricing is premature until the workflow question itself is clearly in scope. "
+                    "Can you share whether the issue is better described as data review volume, security workflow, or something else entirely?"
+                ),
+            },
+            expected_behavior="Use the next step to clarify scope first rather than jumping back to pricing.",
+            failure_rationale="Pricing-first follow-up without a scope check is weak next-step design.",
+            expected_terms=["pricing", "scope"],
+            forbidden_terms=["pricing sheet", "rate card", "quote now"],
+            banned_phrases=["world-class", "quick chat", "book pricing review"],
+            max_body_words=200,
+            judge_dimensions=["next_step_quality", "signal_grounding", "style_guide_adherence"],
+            probe_id="P34",
+            authoring_note="Held-out extension: pricing concern should be redirected to an in-scope classification question.",
+        ),
+        _held_out_extension_spec(
+            suffix="next-step-thread-reset-specificity",
+            difficulty="hard",
+            failure_dimension="next_step_quality",
+            channel="linkedin_dm",
+            message_kind="warm_reply",
+            prospect={"company_name": "Windward Health Ops", "contact_role": "Director of Revenue Systems", "company_stage": "growth"},
+            signal={
+                "primary_segment": "segment_2_restructuring_cost",
+                "signal_confidence": "medium",
+                "signal_type": "prior_thread",
+                "evidence": "The prior thread drifted into generic follow-up language, and the buyer responded asking for one precise point instead of another broad outreach cycle.",
+                "confidence": "medium",
+                "source_ref": "seed/probe_library.md#P34",
+            },
+            ai_maturity={"score": 1, "confidence": "medium"},
+            bench_context={"supported_stacks": ["python", "revops", "data"], "capacity_commitment_allowed": False, "pricing_scope": "public_bands_only"},
+            prior_thread={"contacted_before": True, "summary": "The revenue systems lead asked for a tighter reset with one precise question."},
+            candidate_output={
+                "body": (
+                    "Hi Simone, thanks for pushing for a cleaner reset. "
+                    "Can you share which single revenue-system handoff is creating the most avoidable rework right now?"
+                ),
+            },
+            expected_behavior="Reset the thread with one specific operational question rather than a vague reconnection request.",
+            failure_rationale="A generic thread reset does not give the buyer an easy way to respond.",
+            expected_terms=["revenue", "handoff"],
+            forbidden_terms=["let us reconnect", "wanted to follow up generally", "open to chat"],
+            banned_phrases=["world-class", "quick chat", "circle back"],
+            max_body_words=120,
+            judge_dimensions=["next_step_quality", "signal_grounding", "style_guide_adherence"],
+            probe_id="P34",
+            authoring_note="Held-out extension: thread reset must land on one precise revenue-systems question.",
+        ),
+    ]
+
+
+HAND_AUTHORED_SPECS.extend(_additional_held_out_specs())
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate hand-authored Tenacious-Bench tasks.")
     parser.add_argument(

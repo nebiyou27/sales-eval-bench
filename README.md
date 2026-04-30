@@ -11,6 +11,9 @@ has 79 tasks, and `held_out/` has 14 sealed tasks. All 4 authoring modes have ru
 paths, including live synthetic generation with judge rotation, seed stamping, and duplicate
 filtering.
 
+The current `held_out/` slice is clean enough for directional comparisons and smoke evaluation,
+but it is still below the planned 50-task size for stronger ablation claims.
+
 ## What this is
 
 A 200-300 task evaluation dataset covering Tenacious-specific sales agent failure modes, plus a

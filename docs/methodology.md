@@ -118,14 +118,20 @@ specificity score is at least 4/5.
 | `dev/` | 30% | ~75 tasks | Iteration, rubric calibration |
 | `held_out/` | 20% | ~50 tasks | Sealed evaluation only |
 
-Held-out is sealed after contamination checks pass. It is gitignored from training scripts and
-not committed in unencrypted form until the leaderboard is published.
+Held-out is sealed only after contamination checks pass. In the current repo snapshot, the
+14-row held-out slice is committed for continuity and contamination auditing, but it remains
+off-limits for training and should be treated as directional evaluation surface rather than a
+full ablation-grade benchmark until it is expanded toward the 50-task target.
 
 Delta A is tested on the paired held-out set with McNemar's test for binary pass/fail and a
 paired bootstrap 95% CI over task-level score deltas. With n=50, a 10 percentage point lift is
 reported as directional unless its paired CI clears zero; the target minimum detectable effect is
 approximately 20-25 percentage points at alpha=0.05 under conservative discordance assumptions,
 assuming roughly 30% discordant pairs.
+
+With the current committed `held_out` count of 14, any adapter-vs-baseline comparison should be
+framed as a smoke or directional result only. It is still useful for early regression checks, but
+not strong enough for confident ablation claims.
 
 ---
 
