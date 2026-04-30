@@ -26,7 +26,8 @@ block risky outreach before it is sent."
 
 **Funding and cost posture.** No external funding. The repo assumes low-cost authoring and keeps
 generation, filtering, and contamination work in the dev-tier budget, with all live calls logged
-to `cost/log.csv`.
+to `cost/log.csv`. Live usage events are present in the log, but actual-cost reconciliation is
+still pending until a provider usage export is available.
 
 ## 2. Composition
 
@@ -35,7 +36,7 @@ to `cost/log.csv`.
 (`train` + `dev`), while `held_out` remains excluded from training use.
 
 The held-out split now reaches the 50-task target and passes the contamination gate, but human
-agreement work is still pending, so the corpus should not yet be described as fully
+inter-rater agreement work is still pending, so the corpus should not yet be described as fully
 human-calibrated.
 The committed repo includes the generator code, tests, documentation, and contamination report for
 that sealed split, but the 50 held-out task rows themselves remain local and gitignored.
@@ -151,7 +152,8 @@ fixture-versus-production honesty.
 - duplicate filtering against existing synthetic outputs and the current batch,
 - metadata capture for prompt version, generation model, judge model, and seed.
 
-The current committed synthetic count is 11 accepted tasks: 7 in `train` and 4 in `dev`.
+The current committed synthetic count is 11 accepted tasks: 7 in `train` and 4 in `dev`. That is
+below the original source-mode target, so the current corpus remains programmatic and trace-heavy.
 
 **Data freshness and fictionalization.** The benchmark is grounded in April 2026 Week 10 artifacts,
 but the committed tasks use fictional company and contact contexts. The repo does not publish real

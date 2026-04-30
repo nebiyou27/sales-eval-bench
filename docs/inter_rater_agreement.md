@@ -1,13 +1,13 @@
 # Inter-Rater Agreement - Tenacious-Bench v0.1
 
-Generated: 2026-04-30. This workflow is prepared, but final human agreement remains pending until
-the label columns below are filled by one human on first pass, the same human on second pass after
-at least 24 hours, and ideally a second human labeler.
+Generated: 2026-04-30. This workflow is prepared, but final human inter-rater agreement remains
+pending until the label columns below are filled by one human on first pass, the same human on
+second pass after at least 24 hours, and ideally a second human labeler.
 
 Subset path: `docs/inter_rater_subset.jsonl`
 
 Status note: the deterministic baseline below is preserved for reference only. It is not human
-agreement and should not be reported as human calibration.
+agreement and should not be reported as human calibration or inter-rater reliability.
 
 ## Protocol Status
 

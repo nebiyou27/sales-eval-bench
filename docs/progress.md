@@ -31,6 +31,11 @@ documentation so the sealed held-out policy is stated consistently before traini
 remains excluded. Human agreement second pass and second-labeler review are still pending, so Act
 III data prep is ready but benchmark calibration is not yet fully closed.
 
+**Open risk carried forward:** `cost/log.csv` now shows live usage events for synthetic generation
+and judge filtering, but the `actual_cost_usd` fields remain `0.00` placeholders until provider
+usage export data is available. Actual-cost reconciliation is therefore still pending and should
+not be reported as a finalized zero-cost outcome.
+
 ## 2026-04-30 - Final Act II hardening checkpoint: held_out 50, validation rerun, docs frozen
 
 **Completed:** Closed the held-out size gap, tightened sealed-split handling in training prep, and

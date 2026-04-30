@@ -14,9 +14,10 @@ seed stamping, and duplicate filtering.
 
 The local `held_out/` slice now reaches the 50-task target and passes the contamination gate. It
 remains gitignored and sealed from training use, and `src/training/prepare_orpo_data.py` now
-indexes only `train/` and `dev/` when preparing preference data. The committed repo includes the
-held-out generators, tests, documentation, and contamination report, but not the held-out task rows
-themselves.
+indexes only `train/` and `dev/` when preparing preference data. Human inter-rater agreement is
+still pending, so the corpus should not yet be described as fully human-calibrated. The committed
+repo includes the held-out generators, tests, documentation, and contamination report, but not the
+held-out task rows themselves.
 
 ## Current counts
 
@@ -112,6 +113,16 @@ The next quality upgrades are intentionally quantitative:
 - report per-dimension acceptance and rejection counts for live synthesis,
 - log preference-prep drop rates and rotation-policy rejections,
 - add human agreement results once the second pass and second-labeler review are complete.
+
+## Known caveats before training
+
+- Human inter-rater agreement is still pending; `docs/inter_rater_agreement.md` is a prepared
+  protocol, not a completed reliability report.
+- Synthetic coverage is 11 tasks, which is below the original target mix, so the current corpus
+  remains programmatic and trace-heavy.
+- `cost/log.csv` records live usage events, but actual-cost reconciliation is still pending until a
+  provider usage export is available. Current `0.00` actual-cost entries should not be treated as a
+  final cost claim.
 
 ## External references
 

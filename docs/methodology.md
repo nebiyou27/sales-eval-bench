@@ -123,7 +123,8 @@ Held-out is sealed only after contamination checks pass. In the current repo sna
 themselves remain gitignored and unversioned. The committed repo includes the held-out generators,
 tests, documentation, and contamination report; it does not include the sealed held-out rows.
 Held-out remains off-limits for training. The split size is now ablation-ready, but human
-agreement work is still pending, so "sealed" should not be read as "fully human-calibrated."
+inter-rater agreement work is still pending, so "sealed" should not be read as
+"fully human-calibrated."
 
 Delta A is tested on the paired held-out set with McNemar's test for binary pass/fail and a
 paired bootstrap 95% CI over task-level score deltas. With n=50, a 10 percentage point lift is
@@ -337,7 +338,7 @@ Train and dev remain above their original planning targets due to the earlier Wa
 generation. held_out now meets the 50-task target through additional hand-authored adversarial
 coverage, with emphasis on `gap_condescension`, `ai_maturity_consistency`, `signal_grounding`,
 and `next_step_quality`. Synthetic mode remains at 11 tasks, so source-mode balance is still not
-at the original 25% synthetic aspiration.
+at the original 25% synthetic aspiration and the corpus remains programmatic and trace-heavy.
 
 ### Realized counts snapshot
 
