@@ -13,6 +13,11 @@ tenacious_bench_v0.1/held_out/
 outputs/
 *.jsonl.gz
 cost/log.csv
-models/
+models/*
+!models/orpo_qwen3_0_6b_lora_adapter/
+!models/orpo_qwen3_0_6b_lora_adapter/adapter_config.json
+!models/orpo_qwen3_0_6b_lora_adapter/adapter_model.safetensors
+!models/orpo_qwen3_0_6b_lora_adapter/loss_curve.png
+!models/orpo_qwen3_0_6b_lora_adapter/training_run_summary.json
 Challenge_Documents/
 docs/plans/Day_Zero_Implementation_Plan.md

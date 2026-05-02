@@ -4,6 +4,35 @@ Decision log. Most recent entry first.
 
 ---
 
+## 2026-05-02 - Act III training closed with adapter-only ORPO artifact
+
+**Completed:** Finished a clean Colab ORPO run that produced a publishable LoRA adapter instead of
+the earlier broader full-model save.
+
+**Changes:**
+
+- `Challenge_Documents/unsloth_orpo_full_train.ipynb` and `notebooks/unsloth_orpo_full_train.ipynb`:
+  Refined the Colab notebook to use explicit `peft` LoRA wrapping, `trl.experimental.orpo`,
+  fp32 trainable-parameter casting to avoid AMP unscale failures, and adapter-only save
+  assertions.
+- `models/orpo_qwen3_0_6b_lora_adapter/`: Added the final adapter artifact set copied back from
+  Colab: `adapter_config.json`, `adapter_model.safetensors`, `loss_curve.png`, and
+  `training_run_summary.json`.
+
+**Run summary:**
+
+- Base model: `unsloth/Qwen3-0.6B`
+- Dataset: `training_data/orpo_preferences.jsonl`
+- Public preference rows: `211`
+- LoRA config: `r=16`, `alpha=16`, `dropout=0.0`
+- ORPO config: `beta=0.1`, `lr=2e-5`, batch `1`, grad accumulation `4`, epochs `1`
+- Result: `status=pass`, `global_step=53`, `all_losses_finite=true`
+- Peak VRAM: `2.38 GB`
+- Final artifact: adapter-only save with `adapter_model.safetensors`
+
+**Status:** Act III training evidence is now present in-repo with the correct adapter-only artifact
+shape for publication. Human agreement second pass and Act IV held-out ablations are still pending.
+
 ## 2026-04-30 - Act III preference-pair prep: public-only ORPO corpus and sealed-policy doc guard
 
 **Completed:** Added public-only ORPO preference-pair preparation and tightened the Act II
