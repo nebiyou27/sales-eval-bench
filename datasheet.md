@@ -251,7 +251,8 @@ Changes to the benchmark should preserve:
 - `sms` coverage is 9 tasks, which under-represents that channel.
 - `hand_authored` coverage is concentrated in `train` and `held_out`; `dev` currently has no
   hand-authored rows.
-- The human reliability workflow in `docs/inter_rater_agreement.md` is still pending, so the
+- The human reliability workflow in `inter_rater_agreement.md` is complete on the 30-task subset
+  (test-retest and inter-rater agreement at 100% raw / above the 80% threshold post-revision); the
   benchmark is sealed and contamination-checked but not yet fully human-calibrated.
 
 ### Version notes

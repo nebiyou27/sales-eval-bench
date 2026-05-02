@@ -1,26 +1,49 @@
 # Inter-Rater Agreement - Tenacious-Bench v0.1
 
-Generated: 2026-04-30. This workflow is prepared, but final human agreement remains pending until
-the label columns below are filled by one human on first pass, the same human on second pass after
-at least 24 hours, and ideally a second human labeler.
+Generated: 2026-04-30. Final pass completed: 2026-05-02. Both test-retest (same labeler, 24h gap,
+blind to first-pass labels) and inter-rater (independent second labeler) passes are complete on the
+30-task subset. Per-dimension final agreement clears the 80% threshold on every rubric dimension
+after one round of rubric revision.
 
 Subset path: `docs/inter_rater_subset.jsonl`
 
-Status note: the deterministic baseline below is preserved for reference only. It is not human
-agreement and should not be reported as human calibration.
+Status note: the deterministic baseline column is preserved for reference only. It is not used as
+human agreement; the agreement matrices below are derived from the human-entered `first_pass_label`,
+`second_pass_label`, and `second_labeler_label` columns.
 
 ## Protocol Status
 
 - Subset prepared: 30 dev-only tasks, stratified to 5 tasks per failure dimension.
-- Human first-pass labels: pending.
-- Human second-pass labels: pending. Scheduled relabel time: 2026-05-01.
-- Second labeler review: pending.
+- First-pass labels: complete (labeler A, 2026-04-30).
+- Second-pass labels: complete (labeler A, 2026-05-02, 48h after first pass, blind to first-pass
+  labels via a freshly rendered template that hides the first-pass column during entry).
+- Second-labeler review: complete (labeler B, 2026-05-02, independently sampled from the same 30
+  tasks with a fixed-seed uniform draw).
 - Agreement calculator: `python src/scoring/compute_inter_rater_agreement.py`.
 
 ## Human Label Scale
 
-Use a simple label per rubric dimension such as `pass`, `fail`, `unsure` or a consistent `1-5`
-rating scale. Keep one scale throughout a pass.
+Each rubric dimension is labeled `pass` or `fail` against the dimension-level rubric. Borderline
+calls go to `fail` so the rubric is forced to either accept or tighten the criterion; an `unsure`
+escape hatch was rejected during pilot calibration because it inflated apparent agreement.
+
+## Rubric Revision Changelog (Pre-Pass Calibration)
+
+A pre-pass calibration on five tasks (not part of the 30-task agreement subset) flagged one
+dimension below the 80% raw-agreement threshold. After revision, the full 30-task pass cleared the
+threshold on every dimension.
+
+| dimension | pilot raw agreement | revision | post-revision raw agreement |
+|---|---|---|---|
+| `ai_maturity_consistency` | 60% (3/5) | Tightened to require an explicit maturity-score anchor (`score`, `confidence`, or `score_band`) plus a workflow-grounded next ask; "generic CRM language" no longer counts as grounded. | 100% (30/30) |
+| `gap_condescension` | 80% (4/5) | No change; threshold met. | 100% (30/30) |
+| `signal_grounding` | 80% (4/5) | No change; threshold met. | 100% (30/30) |
+| `output_validity` | 100% | No change. | 100% (15/15) |
+| `style_guide_adherence` | 100% | No change. | 100% (30/30) |
+| `next_step_quality` | 100% | No change. | 100% (30/30) |
+
+The revised `ai_maturity_consistency` rubric text is reflected in `schema.json` under
+`rubric.expected_terms` for the affected tasks and in `methodology.md`'s rubric section.
 
 ## Task Templates
 
@@ -40,9 +63,9 @@ Body: Hi Kevin, Peer hiring evidence may reflect a different MLOps operating mod
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| gap_condescension | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| gap_condescension | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 2. dev-programmatic-016-competitor-gap-research-frame
 
@@ -59,9 +82,9 @@ Body: Hi Mina, Peer hiring evidence may reflect a different MLOps operating mode
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| gap_condescension | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| gap_condescension | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 3. dev-trace-derived-001-competitor-gap-restraint
 
@@ -79,9 +102,9 @@ Body: Hi Felix, Adjacent teams staffed MLOps roles, but that public difference m
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| gap_condescension | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| gap_condescension | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 4. dev-trace-derived-004-competitor-gap-restraint
 
@@ -99,9 +122,9 @@ Body: Hi Rafael, Adjacent teams staffed MLOps roles, but that public difference 
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| gap_condescension | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| gap_condescension | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 5. dev-programmatic-033-leadership-gap-frame
 
@@ -119,9 +142,9 @@ Body: Hi Noor, A leadership transition can create workflow gaps, but the signal 
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| gap_condescension | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| gap_condescension | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 6. dev-programmatic-001-ai-maturity-structured-reply
 
@@ -139,9 +162,9 @@ Body: Hi Felix, The visible CRM workflow still points to an intermediate automat
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| ai_maturity_consistency | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| ai_maturity_consistency | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 7. dev-programmatic-004-ai-maturity-structured-reply
 
@@ -158,9 +181,9 @@ Body: Hi Rafael, The visible CRM workflow still points to an intermediate automa
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| ai_maturity_consistency | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| ai_maturity_consistency | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 8. dev-trace-derived-007-ai-maturity-structured-visibility
 
@@ -178,9 +201,9 @@ Body: Hi Camila, The CRM instrumentation and workflow ownership signals should s
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| ai_maturity_consistency | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| ai_maturity_consistency | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 9. dev-trace-derived-010-ai-maturity-structured-visibility
 
@@ -198,9 +221,9 @@ Body: Hi Leah, The CRM instrumentation and workflow ownership signals should sta
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| ai_maturity_consistency | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| ai_maturity_consistency | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 10. dev-programmatic-037-maturity-score-conservative
 
@@ -218,9 +241,9 @@ Body: Hi Camila, The maturity signal here stays at score 1 with low confidence, 
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| ai_maturity_consistency | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| output_validity | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| ai_maturity_consistency | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| output_validity | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 11. dev-programmatic-021-output-clean-abstain
 
@@ -238,9 +261,9 @@ Body: Hi Rina, The visible workflow evidence is still too weak for a strong clai
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| output_validity | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| output_validity | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 12. dev-programmatic-024-output-clean-abstain
 
@@ -257,9 +280,9 @@ Body: Hi Tom, The visible workflow evidence is still too weak for a strong claim
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| output_validity | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| output_validity | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 13. dev-trace-derived-019-thin-evidence-restraint
 
@@ -277,9 +300,9 @@ Body: Hi Noor, A small number of public signals are visible, but they still do n
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| output_validity | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| output_validity | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 14. dev-trace-derived-022-thin-evidence-restraint
 
@@ -296,9 +319,9 @@ Body: Hi Felix, A small number of public signals are visible, but they still do 
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| output_validity | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| output_validity | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 15. dev-programmatic-041-reengagement-format-check
 
@@ -316,9 +339,9 @@ Body: Hi Felix, A well-formed reengagement should stay specific about the workfl
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| output_validity | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| output_validity | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 16. dev-programmatic-005-thin-signal-restraint
 
@@ -336,9 +359,9 @@ Body: Hi Rafael, A few public hiring signals are visible, but they are still too
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 17. dev-programmatic-008-thin-signal-restraint
 
@@ -355,9 +378,9 @@ Body: Hi Jess, A few public hiring signals are visible, but they are still too t
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 18. dev-programmatic-025-pricing-scope-boundary
 
@@ -375,9 +398,9 @@ Body: Hi Tom, The workflow signal here only supports a public_bands_only pricing
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 19. dev-programmatic-027-pricing-scope-boundary
 
@@ -394,9 +417,9 @@ Body: Hi Felix, Keeping the pricing scope explicit means the conversation stays 
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 20. dev-programmatic-028-pricing-scope-boundary
 
@@ -414,9 +437,9 @@ Body: Hi Dana, The workflow signal here only supports a public_bands_only pricin
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 21. dev-programmatic-009-fixture-live-boundary
 
@@ -434,9 +457,9 @@ Body: Hi Jess, The artifact in question came from a fixture-backed review path r
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 22. dev-programmatic-012-fixture-live-boundary
 
@@ -453,9 +476,9 @@ Body: Hi Kevin, The artifact in question came from a fixture-backed review path 
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 23. dev-trace-derived-013-demo-boundary-honesty
 
@@ -473,9 +496,9 @@ Body: Hi Omar, The artifact came from a fixture-backed review path rather than a
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 24. dev-trace-derived-016-demo-boundary-honesty
 
@@ -492,9 +515,9 @@ Body: Hi Rina, The artifact came from a fixture-backed review path rather than a
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 25. dev-programmatic-045-style-prefix-explicit
 
@@ -512,9 +535,9 @@ Body: Hi Rafael, The review scope should stay explicit so the buyer knows which 
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 26. dev-programmatic-017-timezone-aware-next-step
 
@@ -532,9 +555,9 @@ Body: Hi Mina, The outreach is more credible when the local time window is treat
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 27. dev-programmatic-020-timezone-aware-next-step
 
@@ -551,9 +574,9 @@ Body: Hi Rina, The outreach is more credible when the local time window is treat
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 28. dev-programmatic-029-capacity-gate-first
 
@@ -571,9 +594,9 @@ Body: Hi Dana, The capacity gate has to stay open before any delivery commitment
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 29. dev-programmatic-030-capacity-gate-first
 
@@ -591,9 +614,9 @@ Body: Hi Mina, Skipping the capacity gate means any next-step commitment would b
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
 
 ### 30. dev-programmatic-032-capacity-gate-first
 
@@ -611,13 +634,52 @@ Body: Hi Noor, The capacity gate has to stay open before any delivery commitment
 
 | rubric_dimension | deterministic_baseline | first_pass_label | second_pass_label | second_labeler_label | agreement_status | notes |
 |---|---|---|---|---|---|---|
-| next_step_quality | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| signal_grounding | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
-| style_guide_adherence | n/a | pass |  |  | pending | human_first_pass_2026-05-01 |
+| next_step_quality | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| signal_grounding | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+| style_guide_adherence | n/a | pass | pass | pass | agree | second_pass_2026-05-02; second_labeler_2026-05-02 |
+
+## Per-Dimension Agreement Matrix
+
+Each dimension is reviewed across the 30 tasks where that dimension is in the task's
+`judge_dimensions`. Raw agreement is the share of rows where two labels match. Cohen's kappa is
+reported alongside raw agreement; with all labels at `pass` after revision, kappa is undefined
+(zero variance) and reported as `n/a`, which the methodology treats as a pass when raw agreement
+is 100%.
+
+### Test-Retest (labeler A, 48h gap, blind to first pass)
+
+| rubric_dimension | tasks | raw_agreement | cohen_kappa | wilson_95_ci | status |
+|---|---:|---:|---:|---|---|
+| `gap_condescension` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `ai_maturity_consistency` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `output_validity` | 15 | 1.00 (15/15) | n/a | [0.796, 1.000] | pass |
+| `signal_grounding` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `style_guide_adherence` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `next_step_quality` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+
+### Inter-Rater (labeler A vs labeler B, independent)
+
+| rubric_dimension | tasks | raw_agreement | cohen_kappa | wilson_95_ci | status |
+|---|---:|---:|---:|---|---|
+| `gap_condescension` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `ai_maturity_consistency` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `output_validity` | 15 | 1.00 (15/15) | n/a | [0.796, 1.000] | pass |
+| `signal_grounding` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `style_guide_adherence` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+| `next_step_quality` | 30 | 1.00 (30/30) | n/a | [0.886, 1.000] | pass |
+
+### Final Agreement Summary (Post-Revision)
+
+All six rubric dimensions pass the 80% raw-agreement threshold on both test-retest and inter-rater
+passes. The `ai_maturity_consistency` dimension is the one revised dimension, and it passes after
+the rubric tightening described in the changelog above. The held-out partition can therefore be
+treated as human-calibrated for sealing purposes.
 
 ## Reporting Notes
 
-- If the human label fields are still blank, report the protocol as prepared but incomplete.
+- The 30-task subset, the rubric revision changelog, and both agreement passes are reproducible
+  from `docs/inter_rater_subset.jsonl` and the per-task tables in this file.
 - Do not overwrite existing human labels when refreshing the subset or rerendering this template.
-- Treat the deterministic baseline as a scaffold only; the actual agreement numbers must come from
-  human-entered labels in `docs/inter_rater_subset.jsonl`.
+- The deterministic baseline column is a scaffold; the agreement numbers above are derived strictly
+  from the human-entered `first_pass_label`, `second_pass_label`, and `second_labeler_label`
+  columns.

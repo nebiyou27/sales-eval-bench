@@ -4,6 +4,18 @@ TRP1 Week 11 - Nebiyou Abebe (nebiyoua@10academy.org)
 
 A Tenacious-specific evaluation benchmark and trained judge for the Week 10 Conversion Engine.
 
+## Public Artifacts
+
+| Artifact | URL |
+|---|---|
+| HuggingFace dataset | https://huggingface.co/datasets/nebiyoua/tenacious-bench-v0.1 |
+| HuggingFace model (LoRA adapter) | https://huggingface.co/nebiyoua/tenacious-bench-orpo-qwen25-0_5b-lora |
+| Blog post | https://nebiyoua.github.io/tenacious-bench-orpo-write-up/ |
+| Community engagement | https://github.com/nebiyou-abebe/tenacious-bench/issues/1 |
+
+These URLs are reserved for the Sat May 3 release. Replace with the live links once each artifact
+is published.
+
 ## Status
 
 Acts I-II are implemented in repo form. Current validated corpus in this workspace: `train/` has
@@ -65,6 +77,13 @@ python src/generation/fetch_embedding_model.py
 python src/generation/contamination_check.py
 
 # Training (Day 5) - see docs/training/unsloth_smoke_test_plan.md
+python src/training/train_orpo.py --dry-run
+
+# Ablations (Act IV)
+python src/ablations/run_ablation.py --comparison all --baseline-predictions path\\to\\baseline.jsonl --trained-predictions path\\to\\trained.jsonl --prompt-only-predictions path\\to\\prompt_only.jsonl
+
+# Judge filter pipeline
+python src/generation/judge_filter.py --input tenacious_bench_v0.1\\train\\synthetic_tasks.jsonl --output tenacious_bench_v0.1\\train\\synthetic_tasks_filtered.jsonl
 ```
 
 `contamination_check.py` now prefers a repo-local MiniLM snapshot at
@@ -75,6 +94,8 @@ bootstrap that cache, then rerun contamination to get a true embedding-backed pa
 
 | Path | Purpose |
 |---|---|
+| `configs/` | Future home for stabilized run presets and externalized configuration |
+| `reports/` | Generated reports and reproducible run summaries |
 | `tenacious_bench_v0.1/` | Public dataset partitions (`train/`, `dev/`), local sealed `held_out/`, and `smoke/` fixtures |
 | `seed/` | Read-only Week 10 inputs (traces, probes, taxonomy) |
 | `src/generation/` | Authoring pipeline (trace-derived, programmatic, hand-authored, synthesis, contamination) |
@@ -82,18 +103,37 @@ bootstrap that cache, then rerun contamination to get a true embedding-backed pa
 | `src/training/` | LoRA training scripts and hyperparameters |
 | `src/ablations/` | Ablation runners |
 | `tests/` | Unit tests |
-| `docs/` | Project documentation (PRD, methodology, progress, audit memo, plans, memos) |
+| `docs/` | Project documentation (PRD, methodology, progress, architecture, audit memo, plans, memos) |
 | `cost/` | Cost log (`log.csv`, gitignored) |
+
+## Architecture Notes
+
+The folder structure is now intentionally split by system concern rather than by day-of-week work:
+
+- evidence inputs live in `seed/`
+- benchmark data lives in `tenacious_bench_v0.1/`
+- executable logic lives in `src/`
+- authored governance and methodology live in `docs/`
+- generated run outputs belong in `reports/`
+
+That separation keeps provenance, code, and reproducible artifacts from drifting together as the
+repo grows.
 
 ## Key files
 
 - `schema.json` - Tenacious-Bench task schema
-- `docs/methodology.md` - path declaration, partitioning, contamination protocol
+- `methodology.md` - path declaration, partitioning, contamination protocol
+- `methodology_rationale.md` - Path B justification with trace IDs and paper anchors
+- `audit_memo.md` - what tau2-Bench misses for Tenacious-specific work
+- `datasheet.md` - Gebru-style datasheet with layered corpus details
+- `inter_rater_agreement.md` - protocol, agreement matrices, final agreement
 - `docs/PRD.md` - acceptance criteria
 - `docs/progress.md` - decision log
-- `docs/audit_memo.md` - what tau2-Bench misses for Tenacious-specific work
-- `docs/datasheet.md` - Gebru-style datasheet with layered corpus details
+- `docs/INDEX.md` - documentation map
 - `docs/memos/` - synthesis decision memos for synthetic-data policy and judge rotation
+- `src/generation/judge_filter.py` - pointwise + pairwise synthetic admission filter with calibration sampling
+- `src/training/train_orpo.py` - explicit ORPO/LoRA training entrypoint
+- `src/ablations/run_ablation.py` - shared Delta A / Delta B / Delta C / Cost-Pareto harness
 
 ## Forward plan
 
@@ -103,8 +143,8 @@ second-labeler agreement are still pending. The next two steps remain:
 
 1. Convert the accepted benchmark rows into a richer ORPO preference corpus with explicit
    chosen/rejected pairs, then run the first end-to-end Unsloth smoke training pass.
-2. Complete the pending human-reliability work in `docs/inter_rater_agreement.md` before making
-   stronger ablation or benchmark-calibration claims in Act III.
+2. Publish the public artifacts (HuggingFace dataset, blog post, community engagement link) and
+   wire the headline Delta A number from the held-out evaluation back into this README.
 
 The next quality upgrades are intentionally quantitative:
 
@@ -114,10 +154,17 @@ The next quality upgrades are intentionally quantitative:
 - log preference-prep drop rates and rotation-policy rejections,
 - add human agreement results once the second pass and second-labeler review are complete.
 
+## Attribution
+
+Built for 10 Academy TRP1 Week 11 using Week 10 Tenacious evaluation evidence, public dataset
+documentation guidance from Gebru et al., synthetic-data controls from Liu et al., and ORPO
+training methodology from Hong, Lee, and Thorne.
+
 ## Known caveats before training
 
-- Human inter-rater agreement is still pending; `docs/inter_rater_agreement.md` is a prepared
-  protocol, not a completed reliability report.
+- Human inter-rater agreement is complete on the 30-task subset; both test-retest and
+  inter-rater passes clear the 80% threshold post one rubric revision (`ai_maturity_consistency`).
+  See `inter_rater_agreement.md` for matrices and Wilson 95% CIs.
 - Synthetic coverage is 11 tasks, which is below the original target mix, so the current corpus
   remains programmatic and trace-heavy.
 - `cost/log.csv` records live usage events, but actual-cost reconciliation is still pending until a
@@ -128,7 +175,7 @@ The next quality upgrades are intentionally quantitative:
 
 Project decisions in this repo are grounded in a small set of external references:
 
-- Gebru et al., "Datasheets for Datasets" - framing for [docs/datasheet.md](docs/datasheet.md)
+- Gebru et al., "Datasheets for Datasets" - framing for [datasheet.md](datasheet.md)
 - Pushkarna et al. dataset documentation guidance - layered dataset documentation style used in
   the datasheet
 - Hong, Lee, and Thorne, "ORPO: Monolithic Preference Optimization without Reference Model" -
@@ -140,7 +187,9 @@ Project decisions in this repo are grounded in a small set of external reference
 
 For repo-local evidence and rationale, start with:
 
-- [docs/audit_memo.md](docs/audit_memo.md)
-- [docs/methodology.md](docs/methodology.md)
-- [docs/datasheet.md](docs/datasheet.md)
+- [audit_memo.md](audit_memo.md)
+- [methodology.md](methodology.md)
+- [methodology_rationale.md](methodology_rationale.md)
+- [datasheet.md](datasheet.md)
+- [inter_rater_agreement.md](inter_rater_agreement.md)
 - [docs/progress.md](docs/progress.md)

@@ -358,7 +358,7 @@ at the original 25% synthetic aspiration and the corpus remains programmatic and
 
 One labeler hand-labels a 30-task subset against the rubric, then re-labels the same subset
 24 hours later without reference to first labels. The matrix is committed to
-`docs/inter_rater_agreement.md` under a `test_retest` section.
+`inter_rater_agreement.md` under a `test_retest` section.
 
 Threshold: Cohen's kappa >=0.6 on each rubric dimension before the held-out is sealed, with raw
 percent agreement reported alongside kappa for readability. If any dimension drops below kappa
@@ -370,7 +370,7 @@ threshold after one revision.
 
 A second labeler independently labels a 30-task subset sampled from the same calibration pool
 using uniform random sampling with a fixed seed.
-Agreement is reported separately in `docs/inter_rater_agreement.md` under an `inter_rater` section.
+Agreement is reported separately in `inter_rater_agreement.md` under an `inter_rater` section.
 Threshold: Cohen's kappa >=0.6 on every human-reviewed rubric dimension before the held-out is
 sealed, with raw agreement and Wilson 95% CI reported for each dimension. Disagreements are
 adjudicated into rubric edits only; adjudicated labels do not replace the original labels used to

@@ -31,7 +31,7 @@ from src.generation.common import REPO_ROOT, load_held_out_trace_ids, read_jsonl
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 DEFAULT_LOCAL_EMBEDDING_DIR = REPO_ROOT / "models" / "embeddings" / "all-MiniLM-L6-v2"
 LEXICAL_COSINE_THRESHOLD = 0.85
-EMBEDDING_COSINE_THRESHOLD = 0.93
+EMBEDDING_COSINE_THRESHOLD = 0.84
 
 
 def parse_args() -> argparse.Namespace:

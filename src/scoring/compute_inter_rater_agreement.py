@@ -57,7 +57,7 @@ FAILURE_DIMENSIONS = (
 )
 LABEL_FIELDS = ("first_pass_label", "second_pass_label", "second_labeler_label")
 DEFAULT_SUBSET_PATH = Path("docs/inter_rater_subset.jsonl")
-DEFAULT_TEMPLATE_PATH = Path("docs/inter_rater_agreement.md")
+DEFAULT_TEMPLATE_PATH = Path("inter_rater_agreement.md")
 DEFAULT_DEV_DIR = Path("tenacious_bench_v0.1/dev")
 SECOND_PASS_DATE = "2026-05-01"
 BASELINE_LABELER = "src/scoring/scoring_evaluator.py"
@@ -387,7 +387,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--render-template",
         action="store_true",
-        help="Render docs/inter_rater_agreement.md from the current subset file.",
+        help="Render inter_rater_agreement.md from the current subset file.",
     )
     parser.add_argument(
         "--validate-only",

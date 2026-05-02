@@ -26,6 +26,31 @@ The ORPO corpus in `training_data/orpo_preferences.jsonl` is built only from pub
 
 The preference rows also preserve provenance fields such as `source_task_id`, `source_partition`, `chosen_source`, `rejected_source`, and `rejected_model`, which supports later auditing and preference-leakage checks.
 
+## Week 10 Trace Evidence
+
+Path B is anchored in five concrete reward-0.0 trace IDs from the Week 10 Conversion Engine run.
+These traces are cited as justification only; they are excluded from `train` and `dev` partitions
+under the held-out leakage check in `src/generation/contamination_check.py`.
+
+- `a553180f-80d2-4d4b-9a1e-d525b1219cfd` (task 11) — competitor-gap condescension (P33). The agent
+  produced a gap-language reply on weak peer-hiring signal, which is the exact failure mode the
+  trained critic must learn to reject.
+- `89337dd1-bb36-41d7-8530-190df8734cc3` (task 34) — AI-maturity inconsistency (P24). The agent
+  returned an empty/invalid maturity payload while the surrounding scoring still treated the run as
+  acceptable; the critic must learn to mark this `revise` rather than `accept`.
+- `ef2ad255-479a-4b67-a96f-2522026e3aaf` (task 66) — unsupported-evidence overclaim. The agent
+  asserted a workflow gap from a thin public signal; the critic must enforce abstention.
+- `0857ba6e-d8cb-4ec8-b024-3d5ddc298fc6` (task 76) — fixture/live boundary honesty (P30). The
+  agent treated a fixture-backed artifact as production evidence; the critic must demote any
+  output that crosses that boundary.
+- `19d13ac9-f495-4df4-b1c4-d042ca754933` (task 92) — thin-evidence restraint (P29). The agent
+  failed to abstain when the public-signal window was too small to support the claim.
+
+Together these five trace IDs map directly to the inconsistency-class failures that motivate
+Path B over Path A (generation rewrite) or Path C (PRM/trajectory). Each trace gives the rejected
+side of at least one ORPO preference pair after relabeling under the rotation policy; the chosen
+side is materialized at preference-prep time, never inlined into a benchmark row.
+
 ## Paper Anchors
 
 The rationale is grounded in at least two of the required readings:

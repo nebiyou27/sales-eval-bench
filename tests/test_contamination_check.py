@@ -114,7 +114,7 @@ class ContaminationCheckTests(unittest.TestCase):
             write_jsonl(dataset_root / "held_out" / "held_tasks.jsonl", [held_task])
             with patch(
                 "src.generation.contamination_check.encode_texts",
-                return_value=[[1.0, 0.0], [0.92, 0.392]],
+                return_value=[[1.0, 0.0], [0.83, 0.557764]],
             ):
                 report = build_report(dataset_root, "stub-model")
         self.assertEqual(report["embedding_cosine_threshold"], EMBEDDING_COSINE_THRESHOLD)
