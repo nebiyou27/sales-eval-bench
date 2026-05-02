@@ -50,25 +50,29 @@ Sales Eval Bench/
 ├── requirements.txt             # Pinned local Day Zero deps
 │
 ├── docs/                        # All project documentation
+│   ├── INDEX.md                 # Single entry point for docs
 │   ├── PRD.md                   # Acceptance criteria
 │   ├── methodology.md           # Path B declaration, partitioning, contamination protocol
+│   ├── methodology_rationale.md # Path B justification with trace IDs and paper anchors
 │   ├── progress.md              # Decision log
 │   ├── audit_memo.md            # Act I — what τ²-Bench misses
 │   ├── cost_controls.md         # Budget rules; data lives in cost/log.csv
 │   ├── datasheet.md             # Gebru + Pushkarna documentation (later)
 │   ├── inter_rater_agreement.md # Agreement matrix (later)
+│   ├── architecture/            # System-level diagrams
+│   ├── evaluation/              # Eval-pass narratives and result write-ups
 │   ├── inventories/
 │   │   └── day1_seed_inventory.md
 │   ├── memos/                   # Paper reading memos (one per paper)
-│   │   └── synthetic_data_best_practices_v0.md
+│   ├── operations/              # Runbooks and recovery procedures
 │   ├── plans/                   # Working plans (Day_Zero gitignored, Day_1 tracked)
-│   │   ├── Day_Zero_Implementation_Plan.md
-│   │   └── Day_1_Work_Queue.md
-│   └── training/
-│       └── unsloth_smoke_test_plan.md
+│   └── training/                # Unsloth smoke-test plan and training-run notes
 │
 ├── cost/
 │   └── log.csv                  # gitignored audit trail
+│
+├── reports/                     # Pipeline output artifacts (contamination, ablation results)
+│   └── contamination_check.json
 │
 ├── seed/                        # Week 10 artifacts (read-only inputs)
 │   ├── trace_log.jsonl
@@ -77,18 +81,15 @@ Sales Eval Bench/
 │   └── held_out_traces.jsonl
 │
 ├── tenacious_bench_v0.1/        # Data only — code lives in src/
-│   ├── train/                   # 50% — LoRA training data
-│   ├── dev/                     # 30% — iteration and rubric calibration
+│   ├── train/                   # 50% — LoRA training data + orpo_preferences.jsonl
+│   ├── dev/                     # 30% — iteration, rubric calibration, inter_rater_subset.jsonl
 │   ├── held_out/                # 20% — sealed, gitignored
-│   └── smoke/                   # Smoke fixtures (dummy tasks, dummy ORPO preferences, etc.)
-│       ├── dummy_tasks.jsonl
-│       └── dummy_orpo_preferences.jsonl
+│   └── smoke/                   # Smoke fixtures (dummy tasks, dummy ORPO preferences)
 │
 ├── src/                         # Code — pipeline modules
 │   ├── generation/              # Authoring (programmatic, synthesis, dedup, judge filter, contamination)
 │   ├── scoring/
-│   │   └── scoring_evaluator.py
-│   ├── training/                # prepare_orpo_data.py, train_orpo.py, training_run.log
+│   ├── training/                # prepare_orpo_data.py, train_orpo.py, build_orpo_preferences.py
 │   └── ablations/
 │
 └── tests/                       # Unit tests for src/ modules
