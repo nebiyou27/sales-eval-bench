@@ -75,11 +75,13 @@ total is decode-phase memory-bandwidth latency; prefill on a 200-token input acc
 hundred milliseconds at most. `merge_and_unload()` folds the LoRA A and B matrices into the base
 weight matrices (W_merged = W_base + α/r × B·A), producing merged weights with the same matrix
 shape as the base model — the per-token memory-bandwidth load profile is therefore unchanged.
-The 183 ms difference (+1.3%) is within normal run-to-run variance for a shared Colab T4
-(thermal throttling, shared GPU tenancy) and is not attributable to adapter overhead. Caveat:
-each system was measured once — no mean ± std across runs. The variance claim is an inference
-from known T4 noise characteristics, not a measured fact. A rigorous comparison would require
-≥5 runs per system and report the overlap in confidence intervals. The latency deployment gate
+This mechanism predicts a near-zero latency difference: identical weight shapes mean identical
+memory-bandwidth load per decode step, so the two systems should perform the same work per
+token. The observed 183 ms difference (+1.3%) is consistent with that prediction. It is not
+proof — each system was measured once, so no mean ± std exists and the variance claim rests on
+known T4 noise characteristics rather than measured data. A rigorous test would require ≥5 runs
+per system and report overlapping confidence intervals. What can be said: the mechanism predicts
+near-zero, the data shows near-zero, and the two are consistent. The latency deployment gate
 (18,000 ms) is already met by both systems.
 
 ---
