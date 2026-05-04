@@ -169,6 +169,9 @@ def run_inference(model: Any, tokenizer: Any, prompt: str) -> tuple[str, float]:
         add_generation_prompt=True,
         return_tensors="pt",
     )
+    # apply_chat_template may return BatchEncoding (dict-like) in newer transformers
+    if not isinstance(input_ids, torch.Tensor):
+        input_ids = input_ids["input_ids"]
     device = next(model.parameters()).device
     input_ids = input_ids.to(device)
 
@@ -191,9 +194,9 @@ def run_inference(model: Any, tokenizer: Any, prompt: str) -> tuple[str, float]:
 # Data loading
 # ---------------------------------------------------------------------------
 
-def load_tasks() -> list[dict[str, Any]]:
+def load_tasks(held_out_dir: Path) -> list[dict[str, Any]]:
     tasks: list[dict[str, Any]] = []
-    for path in sorted(HELD_OUT_DIR.glob("*.jsonl")):
+    for path in sorted(held_out_dir.glob("*.jsonl")):
         for line in path.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if line:
@@ -242,7 +245,7 @@ def main() -> int:
     args = parse_args()
     output_path = args.output or (REPO_ROOT / "reports" / f"{args.mode}_predictions.jsonl")
 
-    tasks = load_tasks()
+    tasks = load_tasks(args.held_out_dir)
     print(f"Loaded {len(tasks)} held-out tasks")
 
     model, tokenizer = load_model_and_tokenizer(args.mode, args.adapter_path, args.base_model)
