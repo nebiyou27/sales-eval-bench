@@ -67,9 +67,17 @@ algorithm.
 the adapter adds negligible latency overhead after merge-and-unload.
 
 **Production implication:** The latency concern from the stub run (+79%) does not exist in live
-inference. The adapter merge-and-unload is a one-time cost at load time; per-task inference is
-essentially identical between trained and prompt-only modes. The latency deployment gate
-(18,000 ms) is already met by both systems.
+inference. The mechanism: autoregressive decode on a T4 GPU is memory-bandwidth bound — each
+generated token requires loading the full set of model weights from HBM (high-bandwidth memory),
+and the GPU stalls waiting for weight loads rather than performing arithmetic. At Qwen3-0.6B
+scale with ~300 output tokens from a ~200-token input, approximately 13–14 s of the 14,000 ms
+total is decode-phase memory-bandwidth latency; prefill on a 200-token input accounts for a few
+hundred milliseconds at most. `merge_and_unload()` folds the LoRA A and B matrices into the base
+weight matrices (W_merged = W_base + α/r × B·A), producing merged weights with the same matrix
+shape as the base model — the per-token memory-bandwidth load profile is therefore unchanged.
+The 183 ms difference (+1.3%) is within normal run-to-run variance for a shared Colab T4
+(thermal throttling, shared GPU tenancy) and is not attributable to adapter overhead. The
+latency deployment gate (18,000 ms) is already met by both systems.
 
 ---
 
