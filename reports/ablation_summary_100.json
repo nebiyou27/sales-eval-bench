@@ -1,0 +1,69 @@
+{
+  "comparison": "all",
+  "held_out_task_count": 50,
+  "failures": [],
+  "delta_a": {
+    "comparison": "trained_vs_week10_baseline",
+    "improved_pass_rate": 0.66,
+    "baseline_pass_rate": 0.72,
+    "pass_rate_lift": -0.06,
+    "paired_bootstrap_pass_rate": {
+      "mean_delta": -0.06,
+      "ci_low": -0.24,
+      "ci_high": 0.12
+    },
+    "paired_bootstrap_score": {
+      "mean_delta": -0.0132,
+      "ci_low": -0.04,
+      "ci_high": 0.0115
+    },
+    "p_value_sign_flip_score": 0.3573
+  },
+  "delta_b": {
+    "comparison": "trained_vs_prompt_only_same_backbone",
+    "improved_pass_rate": 0.66,
+    "baseline_pass_rate": 0.48,
+    "pass_rate_lift": 0.18,
+    "paired_bootstrap_pass_rate": {
+      "mean_delta": 0.18,
+      "ci_low": 0.02,
+      "ci_high": 0.36
+    },
+    "paired_bootstrap_score": {
+      "mean_delta": 0.0295,
+      "ci_low": -0.0004,
+      "ci_high": 0.0596
+    },
+    "p_value_sign_flip_score": 0.062
+  },
+  "delta_c": {
+    "status": "missing_reference",
+    "note": "Delta C is informational only and does not re-run tau2."
+  },
+  "cost_pareto": {
+    "baseline": {
+      "task_count": 50,
+      "avg_latency_ms": 0.0,
+      "avg_input_tokens": 0.0,
+      "avg_output_tokens": 0.0,
+      "avg_usd_cost": 0.0,
+      "total_usd_cost": 0.0
+    },
+    "trained": {
+      "task_count": 50,
+      "avg_latency_ms": 5053.91,
+      "avg_input_tokens": 0.0,
+      "avg_output_tokens": 0.0,
+      "avg_usd_cost": 0.0,
+      "total_usd_cost": 0.0
+    },
+    "prompt_only": {
+      "task_count": 50,
+      "avg_latency_ms": 7424.654,
+      "avg_input_tokens": 0.0,
+      "avg_output_tokens": 0.0,
+      "avg_usd_cost": 0.0,
+      "total_usd_cost": 0.0
+    }
+  }
+}
